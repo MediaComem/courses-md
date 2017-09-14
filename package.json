@@ -1,0 +1,29 @@
+{
+  "name": "courses-md",
+  "version": "1.0.0",
+  "description": "Write courses in Markdown and publish them as HTML slides",
+  "main": "lib/index.js",
+  "scripts": {
+  },
+  "author": {
+    "name": "Media Engineering Institute",
+    "email": "mei@heig-vd.ch",
+    "url": "mei.heig-vd.ch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "chalk": "^2.1.0",
+    "chokidar": "^1.7.0",
+    "commander": "^2.11.0",
+    "fs-extra": "^4.0.2",
+    "get-port": "^3.2.0",
+    "globby": "^6.1.0",
+    "handlebars": "^4.0.10",
+    "live-server": "^1.2.0",
+    "lodash": "^4.17.4",
+    "log4js": "^2.3.3",
+    "marked": "^0.3.6",
+    "md2remark": "^0.1.5"
+  }
+}
