@@ -1,0 +1,20 @@
+{
+  "source": "./lib",
+  "destination": "./docs",
+  "plugins": [
+    {
+      "name": "esdoc-standard-plugin",
+      "option": {
+        "accessor": {
+          "access": [ "public", "protected" ]
+        },
+        "brand": {
+          "title": "Courses MD"
+        }
+      }
+    },
+    {
+      "name": "esdoc-node"
+    }
+  ]
+}
