@@ -1,0 +1,10 @@
+.git
+docs
+node_modules
+src
+.ackrc
+.babelrc
+.esdoc.json
+.gitignore
+.npmignore
+dist.js

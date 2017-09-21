@@ -1,10 +1,21 @@
 {
   "name": "courses-md",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Write courses in Markdown and publish them as HTML slides",
   "main": "lib/index.js",
+  "bin": {
+    "courses-md": "./bin/courses-md"
+  },
   "scripts": {
-    "docs:build": "esdoc"
+    "docs": "npm run docs:clean && npm run docs:build && npm run docs:watch",
+    "docs:build": "esdoc",
+    "docs:clean": "rimraf docs",
+    "docs:watch": "onchange \"lib/**/*.js\" \"src/**/*.js\" -- npm run docs:build",
+    "prepublishOnly": "npm run src:build",
+    "src": "npm run src:build && npm run src:watch",
+    "src:build": "node dist.js",
+    "src:watch": "onchange \"src/**/*\" -- npm run src:build",
+    "start": "concurrently \"npm run docs\" \"npm run src\""
   },
   "author": {
     "name": "Media Engineering Institute",
@@ -39,8 +50,6 @@
     "path-is-inside": "^1.0.2",
     "pretty-bytes": "^4.0.2",
     "remark-slide": "^0.14.0",
-    "request": "^2.81.0",
-    "request-promise": "^4.2.1",
     "style-loader": "^0.18.2",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",
@@ -49,8 +58,10 @@
     "webpack": "^3.5.6"
   },
   "devDependencies": {
+    "concurrently": "^3.5.0",
     "esdoc": "^1.0.2",
     "esdoc-node": "^1.0.2",
-    "esdoc-standard-plugin": "^1.0.0"
+    "esdoc-standard-plugin": "^1.0.0",
+    "onchange": "^3.2.1"
   }
 }

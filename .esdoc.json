@@ -1,6 +1,7 @@
 {
-  "source": "./lib",
+  "source": ".",
   "destination": "./docs",
+  "includes": [ "^lib/.*\\.js$", "^src/.*\\.js$" ],
   "plugins": [
     {
       "name": "esdoc-standard-plugin",
