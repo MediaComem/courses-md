@@ -18,9 +18,8 @@
     "start": "concurrently \"npm run docs\" \"npm run src\""
   },
   "author": {
-    "name": "Media Engineering Institute",
-    "email": "mei@heig-vd.ch",
-    "url": "mei.heig-vd.ch"
+    "name": "Simon Oulevay (Alpha Hydrae)",
+    "email": "npm@alphahydrae.com"
   },
   "license": "MIT",
   "dependencies": {

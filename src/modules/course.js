@@ -11,15 +11,17 @@ export default class Course {
     this.links = [];
     this.config = JSON.parse($('meta[name="config"]').attr('content'));
 
-    this.addLink({
-      url: this.config.sourceUrl,
-      imageUrl: githugSvg,
-      class: 'source-link',
-      width: 24,
-      height: 24,
-      alt: 'Source code',
-      title: 'Source code'
-    });
+    if (this.config.subjectUrl) {
+      this.addLink({
+        url: this.config.subjectUrl,
+        imageUrl: githugSvg,
+        class: 'source-link',
+        width: 24,
+        height: 24,
+        alt: 'Source code',
+        title: 'Source code'
+      });
+    }
 
     this.addLink({
       url: this.getHomeUrl(),
