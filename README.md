@@ -89,7 +89,7 @@ yourself with these 2 tools to know what you can do.
 * **`src/index.css`**
 
   This file is created by the generator as an example of custom styling. As you
-  can see if you open `src/index.js`, it is imported there.
+  can see in `src/index.js`, it is imported there.
 * **`build`**
 
   This is the directory where the compiled, HTML version of your courses is
@@ -97,7 +97,7 @@ yourself with these 2 tools to know what you can do.
   overwritten every time you make changes in the `subjects` directory.
 
   You don't have to commit it since it's automatically generated. The generator
-  automatically adds it to your `.gitignore` by default.
+  automatically adds it to your `.gitignore`.
 
 ### Scripts
 
