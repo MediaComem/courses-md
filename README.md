@@ -60,21 +60,58 @@ yourself with these 2 tools to know what you can do.
 
 ### File structure
 
-* `README.md` - The main README will be compiled to HTML and become the home page for your courses.
-* `subjects` - This is the main directory where you write your courses. Each course should be a `README.md` file in a sub-directory, e.g. `subjects/my-course/README.md`.
-* `subjects/awesome-stuff/README.md` - The main file for the `awesome-stuff` course. When published, it will be available at `/subjects/awesome-stuff/`.
-* `subjects/awesome-stuff/icon.png` - You can include static assets with your courses. Use a relative path to display it in your markdown, e.g. `<img src="./icon.png" />`.
-* `subjects/awesome-stuff/INSTALL.md` - You can include additional Markdown files which will be available under the course's main path, in this case `/subjects/awesome-stuff/install/`.
-* `src/index.js` - This file is the entry point for your courses' JavaScript and CSS dependencies.
-* `build` - This is the directory where your compiled courses will be saved as HTML. You should never modify anything in it, as it will be overwritten every time you make changes in the `subjects` directory. You don't have to commit it since it's automatically generated (the generator adds it to your `.gitignore` by default).
+* **`README.md`**
+
+  The `README.md` file in the root directory will be compiled to HTML and become
+  the home page for your courses.
+* **`subjects`**
+
+  This is the main directory where you write your courses.  Each course should
+  be a sub-directory in it, e.g. `subjects/awesome-stuff`.
+* **`subjects/awesome-stuff/README.md`**
+
+  Each course should have a `README.md` file which contains the Markdown source
+  of the course. When published, it will be available at
+  `/subjects/awesome-stuff/`.
+* **`subjects/awesome-stuff/icon.png`**
+
+  You can include static assets such as images with your courses. Use a relative
+  path to display it in your markdown, e.g. `<img src="./icon.png" />`.
+* **`subjects/awesome-stuff/INSTALL.md`**
+
+  You can include additional Markdown files which will be available under the
+  course's path, in this case `/subjects/awesome-stuff/install/`.
+* **`src/index.js`**
+
+  This file is the entry point for your courses' JavaScript and CSS
+  dependencies. You may `import` additional librairies and assets from there.  A
+  bundle will be compiled with [webpack][webpack].
+* **`src/index.css`**
+
+  This file is created by the generator as an example of custom styling. As you
+  can see if you open `src/index.js`, it is imported there.
+* **`build`**
+
+  This is the directory where the compiled, HTML version of your courses is
+  saved. You should never modify anything in it, as its contents will be
+  overwritten every time you make changes in the `subjects` directory.
+
+  You don't have to commit it since it's automatically generated. The generator
+  automatically adds it to your `.gitignore` by default.
 
 ### Scripts
 
 The generator sets up the following [npm scripts][npm-scripts] for you:
 
-* `npm start` will build all your courses and display the home page in your browser.
-  It will also set up live reload so that the browser will automatically refresh when you make changes in the `subjects` directory.
-* `npm run build` will build all your courses once and exit.
+* **`npm start`**
+
+  Builds all your courses and display the home page in your browser.  It will
+  also set up live reload so that the browser will automatically refresh when
+  you make changes in the `subjects` directory.
+* **`npm run build`**
+
+  Builds all your courses once and exit. Useful if you want to just get the
+  compiled courses and publish them yourself.
 
 
 
@@ -84,3 +121,4 @@ The generator sets up the following [npm scripts][npm-scripts] for you:
 [node]: https://nodejs.org
 [npm-scripts]: https://docs.npmjs.com/misc/scripts
 [remark]: https://remarkjs.com/#1
+[webpack]: https://webpack.js.org
