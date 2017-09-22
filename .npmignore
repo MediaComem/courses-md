@@ -2,6 +2,8 @@
 .babelrc
 .esdoc.json
 .gitignore
+client
 docs
-src
 dist.js
+src
+subjects

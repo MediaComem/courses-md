@@ -1,7 +1,7 @@
 {
   "source": ".",
-  "destination": "./docs",
-  "includes": [ "^lib/.*\\.js$", "^src/.*\\.js$" ],
+  "destination": "./docs/api",
+  "includes": [ "^client/.*\\.js$", "^lib/.*\\.js$" ],
   "plugins": [
     {
       "name": "esdoc-standard-plugin",

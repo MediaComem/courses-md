@@ -7,16 +7,21 @@
     "courses-md": "./bin/courses-md"
   },
   "scripts": {
-    "docs": "npm run docs:clean && npm run docs:build && npm run docs:watch",
-    "docs:build": "esdoc",
-    "docs:clean": "rimraf docs",
-    "docs:watch": "onchange \"lib/**/*.js\" \"src/**/*.js\" -- npm run docs:build",
+    "client": "npm run client:build && npm run client:watch",
+    "client:build": "node dist.js",
+    "client:watch": "onchange \"client/**/*\" -- npm run client:build",
+    "docs": "concurrently \"npm run docs:api\" \"npm run docs:md\"",
+    "docs:api": "npm run docs:api:clean && npm run docs:api:build && npm run docs:api:watch",
+    "docs:api:build": "esdoc",
+    "docs:api:clean": "rimraf docs/api",
+    "docs:api:watch": "onchange \"client/**/*.js\" \"lib/**/*.js\" -- npm run docs:api:build",
+    "docs:md": "npm run client:build && npm run docs:md:clean && npm run docs:md:build && npm run docs:md:watch",
+    "docs:md:build": "node ./bin/courses-md build",
+    "docs:md:clean": "rimraf docs/md",
+    "docs:md:watch": "onchange \"src/**/*.*\" \"subjects/**/*.*\" -- npm run docs:md:build",
     "doctoc": "doctoc --notitle --github README.md",
-    "prepublishOnly": "npm run src:build",
-    "src": "npm run src:build && npm run src:watch",
-    "src:build": "node dist.js",
-    "src:watch": "onchange \"src/**/*\" -- npm run src:build",
-    "start": "concurrently \"npm run docs\" \"npm run src\""
+    "prepublishOnly": "npm run client:build",
+    "start": "concurrently \"npm run docs\" \"npm run client\""
   },
   "author": {
     "name": "Simon Oulevay (Alpha Hydrae)",

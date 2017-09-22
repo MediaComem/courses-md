@@ -1,4 +1,4 @@
-# Courses <img src="./markdown.svg" width=48.75 height=30 alt="MD">
+# Courses <img src="https://cdn.rawgit.com/dcurtis/markdown-mark/10a241f3/svg/markdown-mark.svg" width=48.75 height=30 alt="MD">
 
 > Write courses in Markdown and publish them as HTML slides.
 

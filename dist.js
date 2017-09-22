@@ -16,7 +16,7 @@ async function compileClient(config) {
 
   await fs.mkdirs(distDir);
 
-  const entryPointSourcePath = path.join(__dirname, 'src', 'index.js');
+  const entryPointSourcePath = path.join(__dirname, 'client', 'index.js');
   const bundlePath = path.join(distDir, 'client.js');
 
   const compiling = runWebpack(createWebpackConfig(entryPointSourcePath, bundlePath));
