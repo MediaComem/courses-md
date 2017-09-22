@@ -11,6 +11,7 @@
     "docs:build": "esdoc",
     "docs:clean": "rimraf docs",
     "docs:watch": "onchange \"lib/**/*.js\" \"src/**/*.js\" -- npm run docs:build",
+    "doctoc": "doctoc --notitle --github README.md",
     "prepublishOnly": "npm run src:build",
     "src": "npm run src:build && npm run src:watch",
     "src:build": "node dist.js",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "concurrently": "^3.5.0",
+    "doctoc": "^1.3.0",
     "esdoc": "^1.0.2",
     "esdoc-node": "^1.0.2",
     "esdoc-standard-plugin": "^1.0.0",
