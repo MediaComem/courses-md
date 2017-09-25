@@ -5,7 +5,7 @@ const URI = require('urijs/src/URI');
 import githugSvg from '../assets/github.svg';
 import homeSvg from '../assets/home.svg';
 
-export default class Course {
+export default class Subject {
   constructor() {
 
     this.links = [];

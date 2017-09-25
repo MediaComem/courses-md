@@ -1,9 +1,9 @@
-import Course from './modules/course';
+import Subject from './modules/subject';
 
 import 'unsemantic/assets/stylesheets/unsemantic-grid-base.css';
 import 'unsemantic/assets/stylesheets/unsemantic-grid-desktop.css';
 import './index.styl';
 
-const course = new Course();
+const subject = new Subject();
 
-export default course;
+export default subject;

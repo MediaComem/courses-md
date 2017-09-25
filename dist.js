@@ -71,7 +71,7 @@ function createWebpackConfig(entryPointPath, bundlePath) {
     },
     output: {
       filename: path.basename(bundlePath),
-      library: 'course',
+      library: 'client',
       libraryTarget: 'commonjs2',
       path: path.dirname(bundlePath)
     },
