@@ -148,7 +148,7 @@ ways to provide these options with Courses MD:
 [config-build]: https://MediaComem.github.io/courses-md/api/class/courses-md/lib/config.js~Config.html
 [config-subject]: https://MediaComem.github.io/courses-md/api/class/courses-md/client/modules/subject.js~Subject.html
 [docs-html]: https://MediaComem.github.io/courses-md/latest/subjects/documentation/
-[docs-md]: https://github.com/MediaComem/courses-md/subjects/documentation#readme
+[docs-md]: https://github.com/MediaComem/courses-md/tree/master/subjects/documentation#readme
 [generate]: https://github.com/MediaComem/courses-md#getting-started
 [github-pages]: https://pages.github.com
 [npm-scripts]: https://docs.npmjs.com/misc/scripts
