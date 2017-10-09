@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css?family=Droid+Serif');
 
+.slide-logo {
+  top: 15px;
+  left: 15px;
+}
+
 body {
   font-family: "Droid Serif", Serif;
 }
