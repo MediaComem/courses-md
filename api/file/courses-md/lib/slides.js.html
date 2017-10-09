@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">courses-md/lib/slides.js | Courses MD</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Write courses in Markdown and publish them as HTML slides"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="Courses MD"><meta property="twitter:description" content="Write courses in Markdown and publish them as HTML slides"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#client-modules">client/modules</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/courses-md/client/modules/subject.js~Subject.html">Subject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib">lib</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/courses-md/lib/config.js~Config.html">Config</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-program">program</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logCompiledFile">logCompiledFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logExistingFile">logExistingFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logNewFile">logNewFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logNewOrExistingFile">logNewOrExistingFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logProgress">logProgress</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-publish">publish</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-compileSlides">compileSlides</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getTemplate">getTemplate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createTemporaryDirectory">createTemporaryDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-execute">execute</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-runWebpack">runWebpack</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toArray">toArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-cli">cli</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib-build">lib/build</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-build">build</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-webpack">webpack</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib-commands">lib/commands</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildCommand">buildCommand</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-publishCommand">publishCommand</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-serve">serve</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-watch">watch</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">courses-md/lib/slides.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const _ = require(&apos;lodash&apos;);
+const chalk = require(&apos;chalk&apos;);
+const debug = require(&apos;debug&apos;)(&apos;slides&apos;);
+const fs = require(&apos;fs-extra&apos;);
+const handlebars = require(&apos;handlebars&apos;);
+const md2remark = require(&apos;md2remark&apos;);
+const path = require(&apos;path&apos;);
+
+const { getTemplate } = require(&apos;./templates&apos;);
+
+exports.compileSlides = async function(config, relativeFilePath, subjectBundlePath) {
+
+  const compiled = await markdownToSlides(config, relativeFilePath, subjectBundlePath);
+
+  const sourcePath = path.join(config.absoluteSubjectsDir, relativeFilePath);
+  const targetPath = compiled.path;
+
+  await fs.mkdirs(path.dirname(compiled.path));
+  await fs.writeFile(compiled.path, compiled.contents, { encoding: &apos;utf-8&apos; });
+
+  debug(`${chalk.yellow(sourcePath)} -&gt; ${chalk.green(targetPath)}`);
+};
+
+async function markdownToSlides(config, relativeFilePath, subjectBundlePath) {
+
+  const sourceFilePath = path.join(config.absoluteSubjectsDir, relativeFilePath);
+  let markdown = await fs.readFile(sourceFilePath, {&#xA0;encoding: &apos;utf8&apos;});
+
+  let targetRelativeFilePath = path.join(&apos;subjects&apos;, relativeFilePath);
+
+  const basenameWithoutExt = path.basename(relativeFilePath, &apos;.md&apos;);
+  if (basenameWithoutExt == &apos;README&apos;) {
+    // Convert subjects/a/b/c/README.md to subjects/a/b/c/index.html
+    targetRelativeFilePath = path.join(path.dirname(targetRelativeFilePath), &apos;index.html&apos;);
+  } else {
+    // Convert subjects/a/b/c/INSTALL.md to subjects/a/b/c/install/index.html
+    targetRelativeFilePath = path.join(path.dirname(targetRelativeFilePath), basenameWithoutExt.toLowerCase(), &apos;index.html&apos;);
+
+    // Update relative Markdown links to take into account the new directory
+    markdown = markdown
+      .replace(/(\[[^\]]+\]\(\.\.\/)/g, &apos;$1../&apos;) // &quot;[foo](../something)&quot; =&gt; &quot;[foo](../../something)&quot;
+      .replace(/^(\[[^\]]+\]:\s*\.\.\/)/g, &apos;$1../&apos;); // &quot;[foo]: ../something&quot; =&gt; &quot;[foo]: ../../something&quot;
+  }
+
+  const targetFilePath = path.join(config.absoluteBuildDir, targetRelativeFilePath);
+
+  const md2remarkOptions = {
+    breadcrumbs: true,
+    file: sourceFilePath
+  };
+
+  const remarkMarkdown = await md2remark(markdown, md2remarkOptions);
+
+  // Determine depth of Markdown file compared to subjects directory
+  // (subjects/a/index.html has depth 1, subjects/a/b/index.html has depth 2, etc)
+  let depth = 0;
+  const subjectPath = path.dirname(relativeFilePath);
+  let currentPath = subjectPath;
+  while (currentPath != &apos;.&apos;) {
+    depth++;
+    currentPath = path.dirname(currentPath);
+  }
+
+  // Use the first Markdown header as the HTML &lt;title&gt;
+  const subjectTitleMatch = markdown.match(/^#\s*([^\n]+)/m);
+  const subjectTitle = subjectTitleMatch ? subjectTitleMatch[1] : &apos;Slides&apos;;
+
+  const templateFunc = await getTemplate(&apos;remark.html&apos;);
+
+  const basePath = &apos;../&apos;.repeat(depth + 1).replace(/\/$/, &apos;&apos;);
+  const title = `${subjectTitle} (${config.title})`;
+
+  let subjectUrl;
+
+  const sourceUrl = await config.getSourceUrl();
+  if (sourceUrl) {
+    subjectUrl = `${sourceUrl}/subjects/${subjectPath}`;
+  }
+
+  // Get remark options from main configuration file
+  const remarkOptions = _.cloneDeep(config.remark);
+
+  // Override remark options per slide deck with subjects/*/remark.js configuration file (if present)
+  const remarkOptionsOverrideFile = path.join(process.cwd(), config.absoluteSubjectsDir, subjectPath, &apos;remark&apos;);
+  try {
+    _.merge(remarkOptions, require(remarkOptionsOverrideFile));
+  } catch(err) {
+    if (fs.existsSync(remarkOptionsOverrideFile + &apos;.js&apos;)) {
+      throw err;
+    }
+  }
+
+  // Insert the Remark Markdown into our HTML template
+  const remarkPage = templateFunc({
+    config: {
+      basePath: basePath,
+      remark: remarkOptions,
+      subjectUrl: subjectUrl
+    },
+    subjectBundlePath: path.join(basePath, path.relative(config.absoluteBuildDir, subjectBundlePath)),
+    source: remarkMarkdown,
+    title: title
+  }, {
+    helpers: {
+      json: function(contents) {
+        return JSON.stringify(contents);
+      }
+    }
+  });
+
+  return {
+    contents: remarkPage,
+    path: targetFilePath
+  };
+};
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.3)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

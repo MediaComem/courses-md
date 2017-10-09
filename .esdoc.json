@@ -1,0 +1,1 @@
+{"source":".","destination":"/var/folders/g8/w1g8p01j1jg9zkc56kvn2fjc0000gn/T/courses-md-19552h6x4w2GYlDtR/api","includes":["^client/.*\\.js$","^lib/.*\\.js$"],"plugins":[{"name":"esdoc-standard-plugin","option":{"accessor":{"access":["public","protected"]},"brand":{"title":"Courses MD"}}},{"name":"esdoc-node"}]}

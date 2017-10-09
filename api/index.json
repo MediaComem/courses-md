@@ -1,0 +1,3498 @@
+[
+  {
+    "__docId__": 0,
+    "kind": "file",
+    "name": "courses-md/client/index.js",
+    "content": "import Subject from './modules/subject';\n\nimport 'unsemantic/assets/stylesheets/unsemantic-grid-base.css';\nimport 'unsemantic/assets/stylesheets/unsemantic-grid-desktop.css';\nimport './index.styl';\n\nconst subject = new Subject();\n\nexport default subject;\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/client/index.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 1,
+    "kind": "file",
+    "name": "courses-md/client/modules/subject.js",
+    "content": "const $ = require('imports-loader?$=jQuery!jquery/dist/jquery');\nconst remark = require('exports-loader?remark!remark-slide/out/remark');\nconst URI = require('urijs/src/URI');\n\nimport githugSvg from '../assets/github.svg';\nimport homeSvg from '../assets/home.svg';\nimport { extend } from './utils';\n\n/**\n * A subject in a course that can be displayed as a Remark HTML slideshow.\n *\n * Various methods of this class can be used to customize the runtime behavior\n * and look-and-feel of the slideshow before calling {@link Subject#start}.\n *\n * The `src/subject/index.js` file in your Courses MD repository should provide\n * a Subject instance that you can customize.\n */\nexport default class Subject {\n\n  /**\n   * Constructs a new subject with the default configuration.\n   *\n   * The subject will have 1 or 2 default links:\n   *\n   * * If a `subjectUrl` is configured, a link to the subject's Markdown source\n   *   will be added.\n   * * A link to the home page will be added.\n   */\n  constructor() {\n\n    /**\n     * @private\n     */\n    this.config = JSON.parse($('meta[name=\"config\"]').attr('content'));\n\n    /**\n     * @private\n     */\n    this.links = [];\n\n    /**\n     * @private\n     */\n    this.logoOptions = undefined;\n\n    if (this.config.subjectUrl) {\n      this.addLink({\n        url: this.config.subjectUrl,\n        imageUrl: githugSvg,\n        class: 'source-link',\n        width: 24,\n        height: 24,\n        alt: 'Source code',\n        title: 'Source code'\n      });\n    }\n\n    this.addLink({\n      url: this.homeUrl,\n      imageUrl: homeSvg,\n      class: 'home-link',\n      width: 24,\n      height: 24,\n      alt: 'Home',\n      title: 'Home'\n    });\n  }\n\n  /**\n   * Adds a link to the slideshow (displayed in the top right corner with the\n   * default style).\n   *\n   * Links are inserted into an element with the `slide-links` class which you\n   * can customize through CSS.\n   *\n   * @param {Object} options - Link options.\n   * @param {string} options.url - The URL to link to.\n   * @param {string} options.imageUrl - The URL of the image to use to display\n   * the link.\n   * @param {number} [options.width] - The width of the link's image.\n   * @param {number} [options.height] - The height of the link's image.\n   * @param {string} [options.class] - Class to add to the link element.\n   * @param {string} [options.alt] - Alternate text of the link's image.\n   * @param {string} [options.title] - Title of the link's image.\n   */\n  addLink(options) {\n    this.links.push(options);\n  }\n\n  /**\n   * Removes all configured links.\n   */\n  clearLinks() {\n    this.links.length = 0;\n  }\n\n  /**\n   * Displays a logo with the specified options (in the top-left corner with the default style).\n   *\n   * The logo will be an element with the `slide-logo` class which you can\n   * customize through CSS.\n   *\n   * @param {Object} options - Logo options.\n   * @param {string} options.url - The URL to go to when the logo is\n   * clicked.\n   * @param {string} options.imageUrl - The URL of the logo's image.\n   * @param {number} [options.width] - The width of the logo's image.\n   * @param {number} [options.height] - The height of the logo's image.\n   */\n  setLogo(options) {\n    this.logoOptions = options;\n  }\n\n  /**\n   * The URL to which the default home link points to (customizable at runtime\n   * through the `home` URL query param).\n   *\n   * By default, this is the same value as the `basePath` configuration property\n   * provided by the build process. However, it can be customized by providing\n   * the `home` URL query param:\n   *\n   * * If the `home` query param is a GitHub identifier in the `User/Repo`\n   * format, the home URL will point to that repository on `https://github.com`.\n   * * If the `home` query param is an URL, it will be used as the home URL.\n   *\n   * @type {string}\n   */\n  get homeUrl() {\n\n    const currentUri = URI(window.location.href);\n    const home = currentUri.search(true).home;\n\n    if (typeof(home) == 'string' && home.match(/^[a-z0-9\\-\\_\\.]+\\/[a-z0-9\\-\\_\\.]+(?:#.*)?$/i)) {\n      return `https://github.com/${home}`;\n    } else if (typeof(home) == 'string') {\n      return home;\n    } else {\n      return this.config.basePath;\n    }\n  }\n\n  /**\n   * A jQuery object that contains an element for each Remark slide in the slideshow.\n   *\n   * @type {jQuery}\n   */\n  get slides() {\n    if (!this._slides) {\n      const slides = $('.remark-slide-content');\n      if (slides.length) {\n        this._slides = slides;\n      }\n    }\n\n    return this._slides;\n  }\n\n  /**\n   * Starts the Remark slideshow.\n   *\n   * @param {Object} options - Slideshow options.\n   * @param {Object} [options.remark] - Configuration options to pass to\n   * Remark (see https://github.com/gnab/remark/wiki/Configuration); note that\n   * these will be applied to **all** slideshows\n   */\n  start(options) {\n    options = options || {};\n\n    const remarkOptions = extend({}, this.config.remark, options.remark);\n\n    /**\n     * The Remark slideshow (only available after calling `start`).\n     *\n     * @type {Remark}\n     */\n    this.slideshow = remark.create();\n\n    this.insertLinks();\n    this.insertLogo();\n\n    // Make all external links open a new window\n    $('a[href]').not('.home-link').not('[href^=\"#\"]').attr('target', '_blank');\n  }\n\n  /**\n   * Inserts the configured links into the slideshow.\n   *\n   * @private\n   */\n  insertLinks() {\n    if (!this.links.length) {\n      return;\n    }\n\n    const $links = $('<div class=\"slide-links\" />');\n\n    this.links.reverse().forEach(link => {\n\n      const $link = $('<a />').attr('href', link.url).prependTo($links);\n\n      if (link.class) {\n        $link.addClass(link.class);\n      }\n\n      const $linkImg = $('<img />').attr('src', link.imageUrl).appendTo($link);\n\n      if (link.alt) {\n        $linkImg.attr('alt', link.alt);\n      }\n\n      if (link.title) {\n        $linkImg.attr('title', link.title);\n      }\n\n      if (link.width) {\n        $linkImg.attr('width', link.width);\n      }\n\n      if (link.height) {\n        $linkImg.attr('height', link.height);\n      }\n    });\n\n    $links.prependTo(this.slides);\n  }\n\n  /**\n   * Inserts the configured logo into the slideshow.\n   *\n   * @private\n   */\n  insertLogo() {\n    if (!this.logoOptions) {\n      return;\n    }\n\n    const $logo = $('<div class=\"slide-logo\" />');\n    const $logoLink = $('<a />').appendTo($logo).attr('href', this.logoOptions.url);\n    const $logoImg = $('<img />').appendTo($logoLink).attr('src', this.config.basePath + '/' + this.logoOptions.imageUrl);\n\n    if (this.logoOptions.width) {\n      $logoImg.attr('width', this.logoOptions.width);\n    }\n\n    if (this.logoOptions.height) {\n      $logoImg.attr('height', this.logoOptions.height);\n    }\n\n    $logo.prependTo(this.slides);\n  }\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/client/modules/subject.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 2,
+    "kind": "variable",
+    "name": "$",
+    "memberof": "courses-md/client/modules/subject.js",
+    "static": true,
+    "longname": "courses-md/client/modules/subject.js~$",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/client/modules/subject.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 3,
+    "kind": "variable",
+    "name": "remark",
+    "memberof": "courses-md/client/modules/subject.js",
+    "static": true,
+    "longname": "courses-md/client/modules/subject.js~remark",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/client/modules/subject.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 4,
+    "kind": "variable",
+    "name": "URI",
+    "memberof": "courses-md/client/modules/subject.js",
+    "static": true,
+    "longname": "courses-md/client/modules/subject.js~URI",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/client/modules/subject.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 5,
+    "kind": "class",
+    "name": "Subject",
+    "memberof": "courses-md/client/modules/subject.js",
+    "static": true,
+    "longname": "courses-md/client/modules/subject.js~Subject",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/client/modules/subject.js",
+    "importStyle": "Subject",
+    "description": "A subject in a course that can be displayed as a Remark HTML slideshow.\n\nVarious methods of this class can be used to customize the runtime behavior\nand look-and-feel of the slideshow before calling {@link Subject#start}.\n\nThe `src/subject/index.js` file in your Courses MD repository should provide\na Subject instance that you can customize.",
+    "lineNumber": 18,
+    "interface": false
+  },
+  {
+    "__docId__": 6,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#constructor",
+    "access": "public",
+    "description": "Constructs a new subject with the default configuration.\n\nThe subject will have 1 or 2 default links:\n\n* If a `subjectUrl` is configured, a link to the subject's Markdown source\n  will be added.\n* A link to the home page will be added.",
+    "lineNumber": 29
+  },
+  {
+    "__docId__": 7,
+    "kind": "member",
+    "name": "config",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#config",
+    "access": "private",
+    "description": "",
+    "lineNumber": 34,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 8,
+    "kind": "member",
+    "name": "links",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#links",
+    "access": "private",
+    "description": "",
+    "lineNumber": 39,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 9,
+    "kind": "member",
+    "name": "logoOptions",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#logoOptions",
+    "access": "private",
+    "description": "",
+    "lineNumber": 44,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 10,
+    "kind": "method",
+    "name": "addLink",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#addLink",
+    "access": "public",
+    "description": "Adds a link to the slideshow (displayed in the top right corner with the\ndefault style).\n\nLinks are inserted into an element with the `slide-links` class which you\ncan customize through CSS.",
+    "lineNumber": 86,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options",
+        "description": "Link options."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.url",
+        "description": "The URL to link to."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.imageUrl",
+        "description": "The URL of the image to use to display\nthe link."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.width",
+        "description": "The width of the link's image."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.height",
+        "description": "The height of the link's image."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.class",
+        "description": "Class to add to the link element."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.alt",
+        "description": "Alternate text of the link's image."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.title",
+        "description": "Title of the link's image."
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 11,
+    "kind": "method",
+    "name": "clearLinks",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#clearLinks",
+    "access": "public",
+    "description": "Removes all configured links.",
+    "lineNumber": 93,
+    "params": [],
+    "return": null
+  },
+  {
+    "__docId__": 12,
+    "kind": "method",
+    "name": "setLogo",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#setLogo",
+    "access": "public",
+    "description": "Displays a logo with the specified options (in the top-left corner with the default style).\n\nThe logo will be an element with the `slide-logo` class which you can\ncustomize through CSS.",
+    "lineNumber": 110,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options",
+        "description": "Logo options."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.url",
+        "description": "The URL to go to when the logo is\nclicked."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options.imageUrl",
+        "description": "The URL of the logo's image."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.width",
+        "description": "The width of the logo's image."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.height",
+        "description": "The height of the logo's image."
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 14,
+    "kind": "get",
+    "name": "homeUrl",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#homeUrl",
+    "access": "public",
+    "description": "The URL to which the default home link points to (customizable at runtime\nthrough the `home` URL query param).\n\nBy default, this is the same value as the `basePath` configuration property\nprovided by the build process. However, it can be customized by providing\nthe `home` URL query param:\n\n* If the `home` query param is a GitHub identifier in the `User/Repo`\nformat, the home URL will point to that repository on `https://github.com`.\n* If the `home` query param is an URL, it will be used as the home URL.",
+    "lineNumber": 128,
+    "type": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 15,
+    "kind": "get",
+    "name": "slides",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#slides",
+    "access": "public",
+    "description": "A jQuery object that contains an element for each Remark slide in the slideshow.",
+    "lineNumber": 147,
+    "type": {
+      "nullable": null,
+      "types": [
+        "jQuery"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 16,
+    "kind": "member",
+    "name": "_slides",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#_slides",
+    "access": "private",
+    "description": null,
+    "lineNumber": 151,
+    "undocument": true,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 17,
+    "kind": "method",
+    "name": "start",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#start",
+    "access": "public",
+    "description": "Starts the Remark slideshow.",
+    "lineNumber": 166,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "options",
+        "description": "Slideshow options."
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "options.remark",
+        "description": "Configuration options to pass to\nRemark (see https://github.com/gnab/remark/wiki/Configuration); note that\nthese will be applied to **all** slideshows"
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 18,
+    "kind": "member",
+    "name": "slideshow",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#slideshow",
+    "access": "public",
+    "description": "The Remark slideshow (only available after calling `start`).",
+    "lineNumber": 176,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Remark"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 19,
+    "kind": "method",
+    "name": "insertLinks",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#insertLinks",
+    "access": "private",
+    "description": "Inserts the configured links into the slideshow.",
+    "lineNumber": 190,
+    "ignore": true,
+    "params": [],
+    "return": null
+  },
+  {
+    "__docId__": 20,
+    "kind": "method",
+    "name": "insertLogo",
+    "memberof": "courses-md/client/modules/subject.js~Subject",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/client/modules/subject.js~Subject#insertLogo",
+    "access": "private",
+    "description": "Inserts the configured logo into the slideshow.",
+    "lineNumber": 232,
+    "ignore": true,
+    "params": [],
+    "return": null
+  },
+  {
+    "__docId__": 21,
+    "kind": "file",
+    "name": "courses-md/client/modules/utils.js",
+    "content": "export function extend(target, ...sources) {\n\n  sources.forEach(source => {\n    if (!source) {\n      return;\n    }\n\n    for (var property in source) {\n      target[property] = source[property];\n    }\n  });\n\n  return target;\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/client/modules/utils.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 22,
+    "kind": "function",
+    "name": "extend",
+    "memberof": "courses-md/client/modules/utils.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/client/modules/utils.js~extend",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/client/modules/utils.js",
+    "importStyle": "{extend}",
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "params": [
+      {
+        "name": "target",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "sources",
+        "types": [
+          "...*"
+        ],
+        "spread": true
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 23,
+    "kind": "file",
+    "name": "courses-md/lib/build/index.js",
+    "content": "const _ = require('lodash');\nconst chalk = require('chalk');\nconst debug = require('debug')('courses-md:build');\nconst del = require('del');\nconst EventEmitter = require('events');\nconst fs = require('fs-extra');\nconst globby = require('globby');\nconst marked = require('marked');\nconst path = require('path');\nconst prettyBytes = require('pretty-bytes');\n\nconst { compileSlides } = require('../slides');\nconst { getTemplate } = require('../templates');\nconst { runWebpack } = require('../utils');\nconst webpackBuildConfig = require('./webpack.build');\n\nmodule.exports = async function build(config, eventEmitter = new EventEmitter()) {\n\n  if (fs.existsSync(config.absoluteBuildDir)) {\n    await del(config.absoluteBuildDir);\n  }\n\n  await fs.mkdirs(config.absoluteBuildDir);\n\n  const [ homeBundleResult, subjectBundleResult ] = await Promise.all([\n    await buildHomeBundle(config).then(result => {\n      eventEmitter.emit('build:home-bundle', result);\n      return result;\n    }),\n    await buildSubjectBundle(config).then(result => {\n      eventEmitter.emit('build:subject-bundle', result);\n      return result;\n    })\n  ]);\n\n  const homeBundlePath = homeBundleResult.bundlePath;\n  const subjectBundlePath = subjectBundleResult.bundlePath;\n\n  await Promise.all([\n    buildHome(config, homeBundlePath).then(result => eventEmitter.emit('build:home', result)),\n    buildSubjects(config, subjectBundlePath).then(result => eventEmitter.emit('build:subjects', result))\n  ]);\n\n  eventEmitter.emit('build');\n};\n\nasync function buildHomeBundle(config) {\n\n  const entryPointPath = config.absoluteHomeEntryPointFile;\n  if (!(await fs.pathExists(entryPointPath))) {\n    return {\n      entryPointPath: entryPointPath,\n      saved: false\n    };\n  }\n\n  const buildDir = config.absoluteBuildDir;\n  const bundleName = 'home';\n\n  const stats = await runWebpack(webpackBuildConfig(entryPointPath, buildDir, bundleName));\n\n  stats.assets.forEach(asset => {\n    debug(`${chalk.green(path.join(config.absoluteBuildDir, asset.name))} ${chalk.magenta(prettyBytes(asset.size))}`)\n  });\n\n  const bundlePath = path.join(buildDir, stats.assetsByChunkName.main);\n\n  return {\n    entryPointPath: entryPointPath,\n    bundlePath: bundlePath,\n    saved: true\n  };\n}\n\nasync function buildSubjectBundle(config) {\n\n  const entryPointPath = config.absoluteSubjectEntryPointFile;\n  const buildDir = config.absoluteBuildDir;\n  const bundleName = 'subject';\n\n  const stats = await runWebpack(webpackBuildConfig(entryPointPath, buildDir, bundleName));\n\n  stats.assets.forEach(asset => {\n    debug(`${chalk.green(path.join(config.absoluteBuildDir, asset.name))} ${chalk.magenta(prettyBytes(asset.size))}`)\n  });\n\n  const bundlePath = path.join(buildDir, stats.assetsByChunkName.main);\n\n  return {\n    entryPointPath: entryPointPath,\n    bundlePath: bundlePath\n  };\n}\n\nasync function buildHome(config, homeBundlePath) {\n\n  const indexPath = path.join(config.absoluteRootDir, 'README.md');\n  const indexContents = await fs.readFile(indexPath, { encoding: 'utf8' });\n\n  const templateFunc = await getTemplate('index.html');\n  const compiledIndexContents = templateFunc({\n    title: config.title,\n    contents: marked(indexContents),\n    homeBundlePath: homeBundlePath ? `./${path.relative(config.absoluteBuildDir, homeBundlePath)}` : undefined\n  });\n\n  const compiledIndexPath = path.join(config.absoluteBuildDir, 'index.html');\n  await fs.writeFile(compiledIndexPath, compiledIndexContents, { encoding: 'utf-8' });\n\n  return {\n    indexPath: indexPath,\n    compiledIndexPath: compiledIndexPath\n  };\n}\n\nasync function buildSubjects(config, subjectBundlePath) {\n\n  const patterns = [ '**/*.*' ];\n  patterns.push(...config.ignore.map(ignore => `!${ignore}`));\n\n  const files = await globby(patterns, { cwd: config.absoluteSubjectsDir });\n\n  await Promise.all(files.map(async file => {\n\n    if (file.match(/\\.md$/)) {\n      return compileSlides(config, file, subjectBundlePath);\n    }\n\n    const sourcePath = path.join(config.absoluteSubjectsDir, file);\n    const targetPath = path.join(config.absoluteBuildDir, 'subjects', file);\n\n    await fs.copy(sourcePath, targetPath);\n\n    debug(`${chalk.yellow(sourcePath)} -> ${chalk.green(targetPath)}`);\n  }));\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/build/index.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 24,
+    "kind": "variable",
+    "name": "_",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~_",
+    "access": "private",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 25,
+    "kind": "variable",
+    "name": "chalk",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~chalk",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 26,
+    "kind": "variable",
+    "name": "debug",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~debug",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 27,
+    "kind": "variable",
+    "name": "del",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~del",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 28,
+    "kind": "variable",
+    "name": "EventEmitter",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~EventEmitter",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 29,
+    "kind": "variable",
+    "name": "fs",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~fs",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 30,
+    "kind": "variable",
+    "name": "globby",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~globby",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 31,
+    "kind": "variable",
+    "name": "marked",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~marked",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 32,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 33,
+    "kind": "variable",
+    "name": "prettyBytes",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~prettyBytes",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 34,
+    "kind": "variable",
+    "name": "compileSlides",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~compileSlides",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 35,
+    "kind": "variable",
+    "name": "getTemplate",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~getTemplate",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 13,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 36,
+    "kind": "variable",
+    "name": "runWebpack",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~runWebpack",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 14,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 37,
+    "kind": "variable",
+    "name": "webpackBuildConfig",
+    "memberof": "courses-md/lib/build/index.js",
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~webpackBuildConfig",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 15,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 38,
+    "kind": "function",
+    "name": "build",
+    "memberof": "courses-md/lib/build/index.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~build",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": "build",
+    "description": null,
+    "lineNumber": 17,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "eventEmitter",
+        "optional": true,
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 39,
+    "kind": "function",
+    "name": "buildHomeBundle",
+    "memberof": "courses-md/lib/build/index.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~buildHomeBundle",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 47,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"entryPointPath\": *, \"bundlePath\": *, \"saved\": boolean}"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 40,
+    "kind": "function",
+    "name": "buildSubjectBundle",
+    "memberof": "courses-md/lib/build/index.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~buildSubjectBundle",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 75,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"entryPointPath\": *, \"bundlePath\": *}"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 41,
+    "kind": "function",
+    "name": "buildHome",
+    "memberof": "courses-md/lib/build/index.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~buildHome",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 95,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "homeBundlePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"indexPath\": *, \"compiledIndexPath\": *}"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 42,
+    "kind": "function",
+    "name": "buildSubjects",
+    "memberof": "courses-md/lib/build/index.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/build/index.js~buildSubjects",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/index.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 116,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "subjectBundlePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null,
+    "ignore": true
+  },
+  {
+    "__docId__": 43,
+    "kind": "file",
+    "name": "courses-md/lib/build/webpack.build.js",
+    "content": "const path = require('path');\n\nmodule.exports = function(entryPointPath, bundleDir, bundleName) {\n  return {\n    entry: entryPointPath,\n    module: {\n      rules: [\n        {\n          test: /\\.css$/,\n          use: [\n            require.resolve('style-loader'),\n            require.resolve('css-loader')\n          ]\n        },\n        {\n          test: /\\.(gif|jpg|png|svg|eot|ttf|woff|woff2)$/,\n          use: [\n            {\n              loader: require.resolve('file-loader'),\n              options: {\n                emitFile: true,\n                name: `[name]-[hash].[ext]`\n              }\n            }\n          ]\n        }\n      ]\n    },\n    output: {\n      filename: `${bundleName}-[hash].js`,\n      path: bundleDir\n    },\n    target: 'web'\n  };\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/build/webpack.build.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 44,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/build/webpack.build.js",
+    "static": true,
+    "longname": "courses-md/lib/build/webpack.build.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/build/webpack.build.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 45,
+    "kind": "function",
+    "name": "webpack",
+    "memberof": "courses-md/lib/build/webpack.build.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/build/webpack.build.js~webpack",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/build/webpack.build.js",
+    "importStyle": "webpack",
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "params": [
+      {
+        "name": "entryPointPath",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "bundleDir",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "bundleName",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"entry\": *, \"module\": *, \"output\": *, \"target\": string}"
+      ]
+    }
+  },
+  {
+    "__docId__": 46,
+    "kind": "file",
+    "name": "courses-md/lib/cli.js",
+    "content": "const commander = require('commander');\n\nconst Config = require('./config');\nconst pkg = require('../package');\nconst build = require('./commands/build');\nconst publish = require('./commands/publish');\nconst serve = require('./commands/serve');\nconst watch = require('./commands/watch');\n\nmodule.exports = program;\n\nasync function program(argv = process.argv) {\n\n  let action = defaultAction;\n\n  commander\n    .option('-c, --config <file>', 'Path to the configuration file (defaults to \"./config.js\")')\n    .option('-b, --build <dir>', 'Path to the build directory where HTML slideshows are saved (defaults to \"./build\")')\n    .option('-t, --title <title>', 'Home page title (defaults to \"Courses MD\")')\n    .option('--base-url <url>', 'Base URL at which the published slides will be available')\n    .option('--repo-url <url>', 'Web URL of the repository where the Markdown source is committed (this should be the URL to the repository on GitHub, for example, not the Git URL)')\n    .option('--publish-url <url>', 'Git URL of the repository to publish the HTML slides to')\n    .option('--publish-branch <branch>', 'Branch to publish the HTML slides in (e.g. \"gh-pages\")')\n    .option('--publish-version <version>', 'Version sub-directory to publish the slides in (defaults to the current year)')\n    .version(pkg.version);\n\n  commander\n    .command('build')\n    .description('Build the home page and all subjects\\' HTML slideshows')\n    .action(() => {\n      action = build;\n    });\n\n  commander\n    .command('publish')\n    .description('Build and commit the home page and all subjects\\' HTML slideshows into a Git repository (e.g. for GitHub Pages)')\n    .action(() => {\n      action = publish;\n    });\n\n  commander\n    .command('serve')\n    .description('Serve the static files in the build directory')\n    .action(() => {\n      action = serve;\n    });\n\n  commander\n    .command('watch')\n    .description('Watch for changes and recompile the home page and subjects when files are modified')\n    .action(() => {\n      action = watch;\n    });\n\n  commander.parse(argv);\n\n  const config = await new Config().load(commander);\n\n  return Promise\n    .resolve(action(config))\n    .catch(err => console.warn(err));\n}\n\nasync function defaultAction(config) {\n  await build(config);\n  serve(config);\n  watch(config);\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/cli.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 47,
+    "kind": "variable",
+    "name": "commander",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~commander",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 48,
+    "kind": "variable",
+    "name": "Config",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~Config",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 49,
+    "kind": "variable",
+    "name": "pkg",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~pkg",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 50,
+    "kind": "variable",
+    "name": "build",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~build",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 51,
+    "kind": "variable",
+    "name": "publish",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~publish",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 52,
+    "kind": "variable",
+    "name": "serve",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~serve",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 53,
+    "kind": "variable",
+    "name": "watch",
+    "memberof": "courses-md/lib/cli.js",
+    "static": true,
+    "longname": "courses-md/lib/cli.js~watch",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 54,
+    "kind": "function",
+    "name": "defaultAction",
+    "memberof": "courses-md/lib/cli.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/cli.js~defaultAction",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 64,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null,
+    "ignore": true
+  },
+  {
+    "__docId__": 55,
+    "kind": "function",
+    "name": "program",
+    "memberof": "courses-md/lib/cli.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/cli.js~program",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/cli.js",
+    "importStyle": "program",
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "params": [
+      {
+        "name": "argv",
+        "optional": true,
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 56,
+    "kind": "file",
+    "name": "courses-md/lib/commands/build.js",
+    "content": "const EventEmitter = require('events');\n\nconst build = require('../build');\nconst { logCompiledFile, logProgress } = require('../logger');\n\nmodule.exports = async function buildCommand(config) {\n\n  const eventEmitter = new EventEmitter();\n\n  eventEmitter.on('build:home-bundle', result => {\n    if (result.saved) {\n      logCompiledFile(config, result.entryPointPath, result.bundlePath);\n    }\n  });\n\n  eventEmitter.on('build:subject-bundle', result => logCompiledFile(config, result.entryPointPath, result.bundlePath));\n  eventEmitter.on('build:home', result => logCompiledFile(config, result.indexPath, result.compiledIndexPath));\n  eventEmitter.on('build:subjects', () => logCompiledFile(config, `${config.absoluteSubjectsDir}/**/*`, config.absoluteBuildDir));\n\n  const building = build(config, eventEmitter);\n\n  await logProgress(building, 'Building...', 'Build successful');\n};\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/commands/build.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 57,
+    "kind": "variable",
+    "name": "EventEmitter",
+    "memberof": "courses-md/lib/commands/build.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/build.js~EventEmitter",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/build.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 58,
+    "kind": "variable",
+    "name": "build",
+    "memberof": "courses-md/lib/commands/build.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/build.js~build",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/build.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 59,
+    "kind": "variable",
+    "name": "logCompiledFile",
+    "memberof": "courses-md/lib/commands/build.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/build.js~logCompiledFile",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/build.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 60,
+    "kind": "function",
+    "name": "buildCommand",
+    "memberof": "courses-md/lib/commands/build.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/commands/build.js~buildCommand",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/commands/build.js",
+    "importStyle": "buildCommand",
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 61,
+    "kind": "file",
+    "name": "courses-md/lib/commands/publish.js",
+    "content": "const publish = require('../publish');\n\nmodule.exports = async function publishCommand(config) {\n  await publish(config);\n};\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/commands/publish.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 62,
+    "kind": "variable",
+    "name": "publish",
+    "memberof": "courses-md/lib/commands/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/publish.js~publish",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 63,
+    "kind": "function",
+    "name": "publishCommand",
+    "memberof": "courses-md/lib/commands/publish.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/commands/publish.js~publishCommand",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/commands/publish.js",
+    "importStyle": "publishCommand",
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 64,
+    "kind": "file",
+    "name": "courses-md/lib/commands/serve.js",
+    "content": "const getPort = require('get-port');\nconst liveServer = require('live-server');\n\nmodule.exports = serve;\n\nasync function serve(config) {\n\n  const port = config.port || await getPort({ port: 3000 });\n\n  liveServer.start({\n    port: port,\n    root: config.absoluteBuildDir,\n    open: true,\n    browser: process.env.BROWSER\n  });\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/commands/serve.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 65,
+    "kind": "variable",
+    "name": "getPort",
+    "memberof": "courses-md/lib/commands/serve.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/serve.js~getPort",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/serve.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 66,
+    "kind": "variable",
+    "name": "liveServer",
+    "memberof": "courses-md/lib/commands/serve.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/serve.js~liveServer",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/serve.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 67,
+    "kind": "function",
+    "name": "serve",
+    "memberof": "courses-md/lib/commands/serve.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/commands/serve.js~serve",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/commands/serve.js",
+    "importStyle": "serve",
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 68,
+    "kind": "file",
+    "name": "courses-md/lib/commands/watch.js",
+    "content": "const chalk = require('chalk');\nconst chokidar = require('chokidar');\nconst debug = require('debug')('watch');\nconst fs = require('fs-extra');\nconst path = require('path');\n\nconst { compileSlides } = require('../slides');\n\nmodule.exports = watch;\n\nfunction watch(config) {\n\n  const watchers = [];\n\n  debug(`Watching ${config.absoluteSubjectsDir}...`);\n  const watcher = chokidar.watch('.', {\n    cwd: config.absoluteSubjectsDir,\n    ignored: [ '**/.*', '**/node_modules/**/*' ],\n    ignoreInitial: true\n  });\n\n  // TODO: watch src\n\n  watchers.push(watcher);\n\n  watcher\n    .on('add', fileChangeHandler(config))\n    .on('change', fileChangeHandler(config));\n\n  return {\n    close: watchers => watcher.close()\n  };\n}\n\nfunction fileChangeHandler(config) {\n  return async function(relativeFilePath) {\n\n    const filePath = path.join(config.absoluteSubjectsDir, relativeFilePath);\n    debug(`${chalk.yellow(filePath)} changed...`);\n\n    if (filePath.match(/\\.md$/)) {\n      const subjectBundlePath = await findSubjectBundle(config);\n      compileSlides(config, path.relative(config.absoluteSubjectsDir, filePath), subjectBundlePath);\n    } else {\n\n      const targetPath = path.join(config.absoluteBuildDir, relativeFilePath);\n\n      await fs.copy(filePath, targetPath);\n\n      debug(`${chalk.yellow(filePath)} -> ${chalk.green(targetPath)}`);\n    }\n  };\n}\n\nasync function findSubjectBundle(config) {\n\n  const buildFiles = await fs.readdir(config.absoluteBuildDir);\n  const matchingFiles = buildFiles.filter(filename => filename.match(/^subject(?:-[a-z0-9]+)?.js$/));\n\n  if (matchingFiles.length === 0) {\n    throw new Error(`No subject bundle found in ${config.absoluteBuildDir}; make sure to use \"build\" at least once before \"watch\"`);\n  } else if (matchingFiles.length != 1) {\n    throw new Error(`Multiple subject bundles found in ${config.absoluteBuildDir}: ${matchingFiles.join(', ')}`);\n  }\n\n  return path.relative(config.absoluteBuildDir, matchingFiles[0]);\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/commands/watch.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 69,
+    "kind": "variable",
+    "name": "chalk",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~chalk",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 70,
+    "kind": "variable",
+    "name": "chokidar",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~chokidar",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 71,
+    "kind": "variable",
+    "name": "debug",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~debug",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 72,
+    "kind": "variable",
+    "name": "fs",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~fs",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 73,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 74,
+    "kind": "variable",
+    "name": "compileSlides",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~compileSlides",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 75,
+    "kind": "function",
+    "name": "fileChangeHandler",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~fileChangeHandler",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 35,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 76,
+    "kind": "function",
+    "name": "findSubjectBundle",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~findSubjectBundle",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 55,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 77,
+    "kind": "function",
+    "name": "watch",
+    "memberof": "courses-md/lib/commands/watch.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/commands/watch.js~watch",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/commands/watch.js",
+    "importStyle": "watch",
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"close\": *}"
+      ]
+    }
+  },
+  {
+    "__docId__": 78,
+    "kind": "file",
+    "name": "courses-md/lib/config.js",
+    "content": "const _ = require('lodash');\nconst fs = require('fs-extra');\nconst path = require('path');\n\nconst { execute } = require('./utils');\n\nconst OPTIONS = [\n  'config',\n  'title',\n  'scmVersion',\n  'repoUrl',\n  'baseUrl',\n  'root',\n  'subjects',\n  'ignore',\n  'build',\n  'homeEntryPoint',\n  'subjectEntryPoint',\n  'remark',\n  'publish.url',\n  'publish.branch',\n  'publish.version'\n];\n\n/**\n * Configuration object for Courses MD.\n *\n * Configuration options can be provided:\n *\n * * At the command line (e.g. `courses-md --config my-config.js build`)\n * * As environment variables (e.g. `COURSES_MD_CONFIG=my-config.js courses-md build`)\n * * As properties exported from a JavaScript configuration file (`./config.js` by default)\n *\n * Options from the command line take precedence over environment variables, which themselves take precedence over configuration file properties.\n * Not all options can be provided with all 3 techniques, depending on the type.\n *\n * The following options are available:\n *\n * CLI                           | Environment                   | Config file       | Purpose\n * :---                          | :---                          | :---              | :---\n * `-c, --config <file>`         | `$COURSES_MD_CONFIG`          |                   | Path to the configuration file (defaults to `./config.js`)\n * `-b, --build <dir>`           | `$COURSES_MD_BUILD`           | `build`           | Path to the build directory where HTML slideshows are saved (defaults to `./build`)\n * `-t, --title <title>`         | `$COURSES_MD_TITLE`           | `title`           | Home page title (defaults to \"Courses MD\")\n *                               |                               | `remark`          | Configuration options to pass to Remark (see https://github.com/gnab/remark/wiki/Configuration); note that these will be applied to **all** slideshows\n * `--base-url <url>`            | `$COURSES_MD_BASE_URL`        | `baseUrl`         | Base URL at which the published slides will be available\n * `--repo-url <url>`            | `$COURSES_MD_REPO_URL`        | `repoUrl`         | Web URL of the repository where the Markdown source is committed (this should be the URL to the repository on GitHub, for example, not the Git URL)\n * `--publish-url <url>`         | `$COURSES_MD_PUBLISH_URL`     | `publish.url`     | Git URL of the repository to publish the HTML slides to\n * `--publish-branch <branch>`   | `$COURSES_MD_PUBLISH_BRANCH`  | `publish.branch`  | Branch to publish the HTML slides in (e.g. \"gh-pages\")\n * `--publish-version <version>` | `$COURSES_MD_PUBLISH_VERSION` | `publish.version` | Version sub-directory to publish the slides in\n */\nclass Config {\n  constructor() {\n    this.setDefaultOptions();\n  }\n\n  get absoluteBuildDir() {\n    return path.resolve(this.absoluteRootDir, this.build);\n  }\n\n  get absoluteHomeEntryPointFile() {\n    return path.resolve(this.absoluteRootDir, this.homeEntryPoint);\n  }\n\n  get absoluteSubjectEntryPointFile() {\n    return path.resolve(this.absoluteRootDir, this.subjectEntryPoint);\n  }\n\n  get absoluteRootDir() {\n    return path.resolve(this.root);\n  }\n\n  get absoluteSubjectsDir() {\n    return path.resolve(this.absoluteRootDir, this.subjects);\n  }\n\n  getEnvVar(name) {\n    return process.env[`COURSES_MD_${name}`];\n  }\n\n  async getSourceUrl() {\n    if (!this.repoUrl) {\n      return;\n    }\n\n    const scmVersion = await this.loadScmVersion();\n    return scmVersion ? `${this.repoUrl}/tree/${scmVersion}` : undefined;\n  }\n\n  async load(options) {\n    options = options || {};\n\n    this.setDefaultOptions();\n\n    const rootDir = path.resolve(options.root || process.env.ROOT || this.root);\n    const configFile = path.resolve(rootDir, options.config || process.env.CONFIG || this.config);\n    const configFileRequired = options.config || process.env.CONFIG || false;\n\n    await this.loadFileOptions(configFile, configFileRequired);\n\n    this.setEnvironmentOptions();\n    this.set(options);\n\n    return this;\n  }\n\n  async loadFileOptions(file, required = true) {\n\n    const exists = await fs.pathExists(file);\n    if (!exists) {\n      if (required) {\n        throw new Error(`Configuration path \"${file}\" does not exist`);\n      } else {\n        return this;\n      }\n    }\n\n    const options = await Promise.resolve(require(file));\n    this.set(options);\n\n    if (options.publish && options.publish.afterBuild) {\n      this.publish.afterBuild = options.publish.afterBuild;\n    }\n\n    return this;\n  }\n\n  async loadScmVersion() {\n    if (typeof(this.scmVersion) == 'function') {\n      return Promise.resolve(this.scmVersion(this));\n    } else {\n      return this.scmVersion;\n    }\n  }\n\n  async loadDefaultScmVersion() {\n    return execute([ 'git', 'rev-parse', '--verify', 'HEAD' ], { cwd: this.absoluteRootDir }).then(result => result.toString().trim()).catch(() => undefined);\n  }\n\n  setEnvironmentOptions() {\n    return this.set({\n      title: this.getEnvVar('TITLE'),\n      scmVersion: this.getEnvVar('SCM_VERSION'),\n      repoUrl: this.getEnvVar('REPO'),\n      baseUrl: this.getEnvVar('BASE_URL'),\n      root: this.getEnvVar('ROOT'),\n      subjects: this.getEnvVar('SUBJECTS'),\n      build: this.getEnvVar('BUILD'),\n      homeEntryPoint: this.getEnvVar('HOME_ENTRY_POINT'),\n      subjectEntryPoint: this.getEnvVar('SUBJECT_ENTRY_POINT'),\n      publish: {\n        url: this.getEnvVar('PUBLISH_URL'),\n        branch: this.getEnvVar('PUBLISH_BRANCH'),\n        version: this.getEnvVar('PUBLISH_VERSION')\n      }\n    });\n  }\n\n  setDefaultOptions() {\n\n    this.remark = {};\n    this.publish = {};\n\n    return this.set({\n      config: 'config.js',\n\n      title: 'Courses MD',\n      scmVersion: () => this.loadDefaultScmVersion(),\n\n      repoUrl: undefined,\n      baseUrl: undefined,\n\n      root: '.',\n\n      subjects: 'subjects',\n      ignore: [ '**/node_modules/**' ],\n\n      build: 'build',\n      homeEntryPoint: 'src/home/index.js',\n      subjectEntryPoint: 'src/subject/index.js',\n\n      publish: {\n        branch: 'master',\n        version: new Date().getFullYear().toString()\n      }\n    });\n  }\n\n  set(options) {\n\n    OPTIONS.forEach(property => {\n      const value = _.get(options, property);\n      if (value !== undefined) {\n        _.set(this, property, value);\n      }\n    });\n\n    return this;\n  }\n\n  validate() {\n\n    this.validateString('title');\n    this.validateString('repoUrl');\n    this.validateString('baseUrl');\n    this.validateString('root');\n    this.validateString('subjects');\n    this.validateString('build');\n    this.validateString('homeEntryPoint');\n    this.validateString('subjectEntryPoint');\n\n    if (!_.isArray(this.ignore)) {\n      throw new Error(`\"ignore\" property must be an array, got ${typeof(this.ignore)}: ${this.ignore}`);\n    }\n\n    if (!_.isObject(this.remark)) {\n      throw new Error(`\"remark\" property must be an object, got ${typeof(this.remark)}: ${this.remark}`);\n    }\n\n    if (!_.includes([ 'string', 'function' ], typeof(this.scmVersion))) {\n      throw new Error(`\"scmVersion\" property must be a string or a function, got ${typeof(this.scmVersion)}: ${this.remark}`);\n    }\n\n    if (this.publish.url !== undefined) {\n      this.validateString('publish.url');\n    }\n\n    if (this.publish.version !== undefined) {\n      this.validateString('publish.version');\n    }\n\n    return this;\n  }\n\n  validateString(property) {\n    const value = _.get(this, property);\n    if (typeof(value) != 'string') {\n      throw new Error(`\"${property}\" property must be a string, got ${typeof(value)}: ${value}`);\n    }\n  }\n}\n\nmodule.exports = Config;\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/config.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 79,
+    "kind": "variable",
+    "name": "_",
+    "memberof": "courses-md/lib/config.js",
+    "static": true,
+    "longname": "courses-md/lib/config.js~_",
+    "access": "private",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/config.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 80,
+    "kind": "variable",
+    "name": "fs",
+    "memberof": "courses-md/lib/config.js",
+    "static": true,
+    "longname": "courses-md/lib/config.js~fs",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/config.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 81,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/config.js",
+    "static": true,
+    "longname": "courses-md/lib/config.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/config.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 82,
+    "kind": "variable",
+    "name": "execute",
+    "memberof": "courses-md/lib/config.js",
+    "static": true,
+    "longname": "courses-md/lib/config.js~execute",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/config.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 83,
+    "kind": "variable",
+    "name": "OPTIONS",
+    "memberof": "courses-md/lib/config.js",
+    "static": true,
+    "longname": "courses-md/lib/config.js~OPTIONS",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/config.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "string[]"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 84,
+    "kind": "class",
+    "name": "Config",
+    "memberof": "courses-md/lib/config.js",
+    "static": true,
+    "longname": "courses-md/lib/config.js~Config",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/config.js",
+    "importStyle": "Config",
+    "description": "Configuration object for Courses MD.\n\nConfiguration options can be provided:\n\n* At the command line (e.g. `courses-md --config my-config.js build`)\n* As environment variables (e.g. `COURSES_MD_CONFIG=my-config.js courses-md build`)\n* As properties exported from a JavaScript configuration file (`./config.js` by default)\n\nOptions from the command line take precedence over environment variables, which themselves take precedence over configuration file properties.\nNot all options can be provided with all 3 techniques, depending on the type.\n\nThe following options are available:\n\nCLI                           | Environment                   | Config file       | Purpose\n:---                          | :---                          | :---              | :---\n`-c, --config <file>`         | `$COURSES_MD_CONFIG`          |                   | Path to the configuration file (defaults to `./config.js`)\n`-b, --build <dir>`           | `$COURSES_MD_BUILD`           | `build`           | Path to the build directory where HTML slideshows are saved (defaults to `./build`)\n`-t, --title <title>`         | `$COURSES_MD_TITLE`           | `title`           | Home page title (defaults to \"Courses MD\")\n                              |                               | `remark`          | Configuration options to pass to Remark (see https://github.com/gnab/remark/wiki/Configuration); note that these will be applied to **all** slideshows\n`--base-url <url>`            | `$COURSES_MD_BASE_URL`        | `baseUrl`         | Base URL at which the published slides will be available\n`--repo-url <url>`            | `$COURSES_MD_REPO_URL`        | `repoUrl`         | Web URL of the repository where the Markdown source is committed (this should be the URL to the repository on GitHub, for example, not the Git URL)\n`--publish-url <url>`         | `$COURSES_MD_PUBLISH_URL`     | `publish.url`     | Git URL of the repository to publish the HTML slides to\n`--publish-branch <branch>`   | `$COURSES_MD_PUBLISH_BRANCH`  | `publish.branch`  | Branch to publish the HTML slides in (e.g. \"gh-pages\")\n`--publish-version <version>` | `$COURSES_MD_PUBLISH_VERSION` | `publish.version` | Version sub-directory to publish the slides in",
+    "lineNumber": 51,
+    "interface": false
+  },
+  {
+    "__docId__": 85,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 52,
+    "undocument": true
+  },
+  {
+    "__docId__": 86,
+    "kind": "get",
+    "name": "absoluteBuildDir",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#absoluteBuildDir",
+    "access": "public",
+    "description": null,
+    "lineNumber": 56,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 87,
+    "kind": "get",
+    "name": "absoluteHomeEntryPointFile",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#absoluteHomeEntryPointFile",
+    "access": "public",
+    "description": null,
+    "lineNumber": 60,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 88,
+    "kind": "get",
+    "name": "absoluteSubjectEntryPointFile",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#absoluteSubjectEntryPointFile",
+    "access": "public",
+    "description": null,
+    "lineNumber": 64,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 89,
+    "kind": "get",
+    "name": "absoluteRootDir",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#absoluteRootDir",
+    "access": "public",
+    "description": null,
+    "lineNumber": 68,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 90,
+    "kind": "get",
+    "name": "absoluteSubjectsDir",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#absoluteSubjectsDir",
+    "access": "public",
+    "description": null,
+    "lineNumber": 72,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 91,
+    "kind": "method",
+    "name": "getEnvVar",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#getEnvVar",
+    "access": "public",
+    "description": null,
+    "lineNumber": 76,
+    "undocument": true,
+    "params": [
+      {
+        "name": "name",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 92,
+    "kind": "method",
+    "name": "getSourceUrl",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": true,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#getSourceUrl",
+    "access": "public",
+    "description": null,
+    "lineNumber": 80,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 93,
+    "kind": "method",
+    "name": "load",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": true,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#load",
+    "access": "public",
+    "description": null,
+    "lineNumber": 89,
+    "undocument": true,
+    "params": [
+      {
+        "name": "options",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 94,
+    "kind": "method",
+    "name": "loadFileOptions",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": true,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#loadFileOptions",
+    "access": "public",
+    "description": null,
+    "lineNumber": 106,
+    "undocument": true,
+    "params": [
+      {
+        "name": "file",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "required",
+        "optional": true,
+        "types": [
+          "boolean"
+        ],
+        "defaultRaw": true,
+        "defaultValue": "true"
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 95,
+    "kind": "method",
+    "name": "loadScmVersion",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": true,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#loadScmVersion",
+    "access": "public",
+    "description": null,
+    "lineNumber": 127,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 96,
+    "kind": "method",
+    "name": "loadDefaultScmVersion",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": true,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#loadDefaultScmVersion",
+    "access": "public",
+    "description": null,
+    "lineNumber": 135,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 97,
+    "kind": "method",
+    "name": "setEnvironmentOptions",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#setEnvironmentOptions",
+    "access": "public",
+    "description": null,
+    "lineNumber": 139,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 98,
+    "kind": "method",
+    "name": "setDefaultOptions",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#setDefaultOptions",
+    "access": "public",
+    "description": null,
+    "lineNumber": 158,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 99,
+    "kind": "member",
+    "name": "remark",
+    "memberof": "courses-md/lib/config.js~Config",
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#remark",
+    "access": "public",
+    "description": null,
+    "lineNumber": 160,
+    "undocument": true,
+    "type": {
+      "types": [
+        "{}"
+      ]
+    }
+  },
+  {
+    "__docId__": 100,
+    "kind": "member",
+    "name": "publish",
+    "memberof": "courses-md/lib/config.js~Config",
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#publish",
+    "access": "public",
+    "description": null,
+    "lineNumber": 161,
+    "undocument": true,
+    "type": {
+      "types": [
+        "{}"
+      ]
+    }
+  },
+  {
+    "__docId__": 101,
+    "kind": "method",
+    "name": "set",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#set",
+    "access": "public",
+    "description": null,
+    "lineNumber": 188,
+    "undocument": true,
+    "params": [
+      {
+        "name": "options",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 102,
+    "kind": "method",
+    "name": "validate",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#validate",
+    "access": "public",
+    "description": null,
+    "lineNumber": 200,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 103,
+    "kind": "method",
+    "name": "validateString",
+    "memberof": "courses-md/lib/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "courses-md/lib/config.js~Config#validateString",
+    "access": "public",
+    "description": null,
+    "lineNumber": 234,
+    "undocument": true,
+    "params": [
+      {
+        "name": "property",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 104,
+    "kind": "file",
+    "name": "courses-md/lib/index.js",
+    "content": "exports.cli = require('./cli');\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/index.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 105,
+    "kind": "variable",
+    "name": "cli",
+    "memberof": "courses-md/lib/index.js",
+    "static": true,
+    "longname": "courses-md/lib/index.js~cli",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/index.js",
+    "importStyle": "{cli}",
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 106,
+    "kind": "file",
+    "name": "courses-md/lib/logger.js",
+    "content": "const chalk = require('chalk');\nconst ora = require('ora');\nconst path = require('path');\nconst pathIsInside = require('path-is-inside');\n\nexports.logCompiledFile = function(config, sourcePath, targetPath) {\n  ora(`${chalk.yellow(getRelativePath(config, sourcePath))} -> ${chalk.green(getRelativePath(config, targetPath))}`).succeed();\n};\n\nexports.logExistingFile = function(config, filePath) {\n  ora(`${chalk.magenta(getRelativePath(config, filePath))} already exists`).info();\n};\n\nexports.logNewFile = function(config, filePath) {\n  ora(`Saved ${chalk.green(getRelativePath(config, filePath))}`).succeed();\n};\n\nexports.logNewOrExistingFile = function(config, filePath, newFile) {\n  if (newFile) {\n    exports.logNewFile(config, filePath);\n  } else {\n    exports.logExistingFile(config, filePath);\n  }\n};\n\nexports.logProgress = function(promise, progressMessage, successMessage, failureMessage) {\n\n  let spinner;\n  if (typeof(progressMessage) != 'string') {\n    spinner = progressMessage.start();\n  } else {\n    spinner = ora(progressMessage).start();\n  }\n\n  return promise.then(() => {\n    if (successMessage) {\n      spinner.succeed(successMessage);\n    } else {\n      spinner.stop();\n    }\n  }, err => {\n    if (failureMessage) {\n      spinner.fail(failureMessage);\n    } else {\n      spinner.fail();\n    }\n\n    return Promise.reject(err);\n  })\n};\n\nfunction getRelativePath(config, absolutePath) {\n  const cwd = path.resolve(process.cwd());\n  return pathIsInside(absolutePath, cwd) ? path.relative(cwd, absolutePath) : absolutePath;\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/logger.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 107,
+    "kind": "variable",
+    "name": "chalk",
+    "memberof": "courses-md/lib/logger.js",
+    "static": true,
+    "longname": "courses-md/lib/logger.js~chalk",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 108,
+    "kind": "variable",
+    "name": "ora",
+    "memberof": "courses-md/lib/logger.js",
+    "static": true,
+    "longname": "courses-md/lib/logger.js~ora",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 109,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/logger.js",
+    "static": true,
+    "longname": "courses-md/lib/logger.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 110,
+    "kind": "variable",
+    "name": "pathIsInside",
+    "memberof": "courses-md/lib/logger.js",
+    "static": true,
+    "longname": "courses-md/lib/logger.js~pathIsInside",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 111,
+    "kind": "function",
+    "name": "logCompiledFile",
+    "memberof": "courses-md/lib/logger.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/logger.js~logCompiledFile",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": "{logCompiledFile}",
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "sourcePath",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "targetPath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 112,
+    "kind": "function",
+    "name": "logExistingFile",
+    "memberof": "courses-md/lib/logger.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/logger.js~logExistingFile",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": "{logExistingFile}",
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "filePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 113,
+    "kind": "function",
+    "name": "logNewFile",
+    "memberof": "courses-md/lib/logger.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/logger.js~logNewFile",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": "{logNewFile}",
+    "description": null,
+    "lineNumber": 14,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "filePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 114,
+    "kind": "function",
+    "name": "logNewOrExistingFile",
+    "memberof": "courses-md/lib/logger.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/logger.js~logNewOrExistingFile",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": "{logNewOrExistingFile}",
+    "description": null,
+    "lineNumber": 18,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "filePath",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "newFile",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 115,
+    "kind": "function",
+    "name": "logProgress",
+    "memberof": "courses-md/lib/logger.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/logger.js~logProgress",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": "{logProgress}",
+    "description": null,
+    "lineNumber": 26,
+    "undocument": true,
+    "params": [
+      {
+        "name": "promise",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "progressMessage",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "successMessage",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "failureMessage",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 116,
+    "kind": "function",
+    "name": "getRelativePath",
+    "memberof": "courses-md/lib/logger.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/logger.js~getRelativePath",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/logger.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 52,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "absolutePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 117,
+    "kind": "file",
+    "name": "courses-md/lib/publish.js",
+    "content": "const cp = require('child_process');\nconst del = require('del');\nconst fs = require('fs-extra');\nconst path = require('path');\n\nconst build = require('./build');\nconst { createTemporaryDirectory, execute } = require('./utils');\n\nmodule.exports = async function publish(config) {\n\n  const branch = config.publish.branch;\n  const repoUrl = config.publish.url;\n\n  const [ currentBranch, scmVersion ] = await Promise.all([\n    execute([ 'git', 'rev-parse', '--abbrev-ref', 'HEAD' ], { cwd: config.absoluteRootDir }),\n    config.loadScmVersion()\n  ]);\n\n  const tmpDir = await createPublishDirectory();\n\n  const gitCommandOptions = { cwd: tmpDir };\n\n  await execute([ 'git', 'init' ], gitCommandOptions);\n  await execute([ 'git', 'remote', 'add', '-t', branch, 'origin', repoUrl ], gitCommandOptions);\n  await execute([ 'git', 'fetch', 'origin' ], gitCommandOptions);\n  await execute([ 'git', 'checkout', branch ], gitCommandOptions);\n\n  const buildDir = path.join(tmpDir, config.publish.version);\n  await del(buildDir, { force: true });\n\n  config.build = buildDir;\n\n  await build(config);\n\n  const latestDir = path.join(tmpDir, 'latest');\n  await del(latestDir, { force: true });\n  await fs.copy(buildDir, latestDir);\n\n  if (config.publish.afterBuild) {\n    await config.publish.afterBuild(config, tmpDir);\n  }\n\n  await execute([ 'git', 'add', '--all', '.' ], gitCommandOptions);\n\n  const status = await execute([ 'git', 'status', '--porcelain' ], gitCommandOptions);\n  if (!status.trim().length) {\n    console.log('No changes');\n    return;\n  }\n\n  await execute([ 'git', 'commit', '-m', `Generated content from ${currentBranch}@${scmVersion}` ], gitCommandOptions);\n  await execute([ 'git', 'push' ], gitCommandOptions);\n};\n\nfunction createPublishDirectory() {\n\n  const options = {\n    prefix: 'courses-md-',\n    unsafeCleanup: true\n  };\n\n  return createTemporaryDirectory(options);\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/publish.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 118,
+    "kind": "variable",
+    "name": "cp",
+    "memberof": "courses-md/lib/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/publish.js~cp",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 119,
+    "kind": "variable",
+    "name": "del",
+    "memberof": "courses-md/lib/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/publish.js~del",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 120,
+    "kind": "variable",
+    "name": "fs",
+    "memberof": "courses-md/lib/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/publish.js~fs",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 121,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/publish.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 122,
+    "kind": "variable",
+    "name": "build",
+    "memberof": "courses-md/lib/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/publish.js~build",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 123,
+    "kind": "variable",
+    "name": "createTemporaryDirectory",
+    "memberof": "courses-md/lib/publish.js",
+    "static": true,
+    "longname": "courses-md/lib/publish.js~createTemporaryDirectory",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 124,
+    "kind": "function",
+    "name": "publish",
+    "memberof": "courses-md/lib/publish.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/publish.js~publish",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": "publish",
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 125,
+    "kind": "function",
+    "name": "createPublishDirectory",
+    "memberof": "courses-md/lib/publish.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/publish.js~createPublishDirectory",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/publish.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 55,
+    "undocument": true,
+    "params": [],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 126,
+    "kind": "file",
+    "name": "courses-md/lib/slides.js",
+    "content": "const _ = require('lodash');\nconst chalk = require('chalk');\nconst debug = require('debug')('slides');\nconst fs = require('fs-extra');\nconst handlebars = require('handlebars');\nconst md2remark = require('md2remark');\nconst path = require('path');\n\nconst { getTemplate } = require('./templates');\n\nexports.compileSlides = async function(config, relativeFilePath, subjectBundlePath) {\n\n  const compiled = await markdownToSlides(config, relativeFilePath, subjectBundlePath);\n\n  const sourcePath = path.join(config.absoluteSubjectsDir, relativeFilePath);\n  const targetPath = compiled.path;\n\n  await fs.mkdirs(path.dirname(compiled.path));\n  await fs.writeFile(compiled.path, compiled.contents, { encoding: 'utf-8' });\n\n  debug(`${chalk.yellow(sourcePath)} -> ${chalk.green(targetPath)}`);\n};\n\nasync function markdownToSlides(config, relativeFilePath, subjectBundlePath) {\n\n  const sourceFilePath = path.join(config.absoluteSubjectsDir, relativeFilePath);\n  let markdown = await fs.readFile(sourceFilePath, { encoding: 'utf8'});\n\n  let targetRelativeFilePath = path.join('subjects', relativeFilePath);\n\n  const basenameWithoutExt = path.basename(relativeFilePath, '.md');\n  if (basenameWithoutExt == 'README') {\n    // Convert subjects/a/b/c/README.md to subjects/a/b/c/index.html\n    targetRelativeFilePath = path.join(path.dirname(targetRelativeFilePath), 'index.html');\n  } else {\n    // Convert subjects/a/b/c/INSTALL.md to subjects/a/b/c/install/index.html\n    targetRelativeFilePath = path.join(path.dirname(targetRelativeFilePath), basenameWithoutExt.toLowerCase(), 'index.html');\n\n    // Update relative Markdown links to take into account the new directory\n    markdown = markdown\n      .replace(/(\\[[^\\]]+\\]\\(\\.\\.\\/)/g, '$1../') // \"[foo](../something)\" => \"[foo](../../something)\"\n      .replace(/^(\\[[^\\]]+\\]:\\s*\\.\\.\\/)/g, '$1../'); // \"[foo]: ../something\" => \"[foo]: ../../something\"\n  }\n\n  const targetFilePath = path.join(config.absoluteBuildDir, targetRelativeFilePath);\n\n  const md2remarkOptions = {\n    breadcrumbs: true,\n    file: sourceFilePath\n  };\n\n  const remarkMarkdown = await md2remark(markdown, md2remarkOptions);\n\n  // Determine depth of Markdown file compared to subjects directory\n  // (subjects/a/index.html has depth 1, subjects/a/b/index.html has depth 2, etc)\n  let depth = 0;\n  const subjectPath = path.dirname(relativeFilePath);\n  let currentPath = subjectPath;\n  while (currentPath != '.') {\n    depth++;\n    currentPath = path.dirname(currentPath);\n  }\n\n  // Use the first Markdown header as the HTML <title>\n  const subjectTitleMatch = markdown.match(/^#\\s*([^\\n]+)/m);\n  const subjectTitle = subjectTitleMatch ? subjectTitleMatch[1] : 'Slides';\n\n  const templateFunc = await getTemplate('remark.html');\n\n  const basePath = '../'.repeat(depth + 1).replace(/\\/$/, '');\n  const title = `${subjectTitle} (${config.title})`;\n\n  let subjectUrl;\n\n  const sourceUrl = await config.getSourceUrl();\n  if (sourceUrl) {\n    subjectUrl = `${sourceUrl}/subjects/${subjectPath}`;\n  }\n\n  // Get remark options from main configuration file\n  const remarkOptions = _.cloneDeep(config.remark);\n\n  // Override remark options per slide deck with subjects/*/remark.js configuration file (if present)\n  const remarkOptionsOverrideFile = path.join(process.cwd(), config.absoluteSubjectsDir, subjectPath, 'remark');\n  try {\n    _.merge(remarkOptions, require(remarkOptionsOverrideFile));\n  } catch(err) {\n    if (fs.existsSync(remarkOptionsOverrideFile + '.js')) {\n      throw err;\n    }\n  }\n\n  // Insert the Remark Markdown into our HTML template\n  const remarkPage = templateFunc({\n    config: {\n      basePath: basePath,\n      remark: remarkOptions,\n      subjectUrl: subjectUrl\n    },\n    subjectBundlePath: path.join(basePath, path.relative(config.absoluteBuildDir, subjectBundlePath)),\n    source: remarkMarkdown,\n    title: title\n  }, {\n    helpers: {\n      json: function(contents) {\n        return JSON.stringify(contents);\n      }\n    }\n  });\n\n  return {\n    contents: remarkPage,\n    path: targetFilePath\n  };\n};\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/slides.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 127,
+    "kind": "variable",
+    "name": "_",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~_",
+    "access": "private",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 128,
+    "kind": "variable",
+    "name": "chalk",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~chalk",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 129,
+    "kind": "variable",
+    "name": "debug",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~debug",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 130,
+    "kind": "variable",
+    "name": "fs",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~fs",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 131,
+    "kind": "variable",
+    "name": "handlebars",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~handlebars",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 132,
+    "kind": "variable",
+    "name": "md2remark",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~md2remark",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 133,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 134,
+    "kind": "variable",
+    "name": "getTemplate",
+    "memberof": "courses-md/lib/slides.js",
+    "static": true,
+    "longname": "courses-md/lib/slides.js~getTemplate",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 135,
+    "kind": "function",
+    "name": "compileSlides",
+    "memberof": "courses-md/lib/slides.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/slides.js~compileSlides",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": "{compileSlides}",
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "relativeFilePath",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "subjectBundlePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 136,
+    "kind": "function",
+    "name": "markdownToSlides",
+    "memberof": "courses-md/lib/slides.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/slides.js~markdownToSlides",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/slides.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "relativeFilePath",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "subjectBundlePath",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"contents\": *, \"path\": *}"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 137,
+    "kind": "file",
+    "name": "courses-md/lib/templates.js",
+    "content": "const fs = require('fs-extra');\nconst handlebars = require('handlebars');\nconst path = require('path');\n\nconst cache = {};\nconst templatesDir = path.join(__dirname, 'templates');\n\nexports.getTemplate = getTemplate;\n\nasync function getTemplate(basename) {\n  if (!cache[basename]) {\n    const templatePath = path.join(templatesDir, basename);\n    cache[basename] = handlebars.compile(await fs.readFile(templatePath, { encoding: 'utf8' }));\n  }\n\n  return cache[basename];\n}\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/templates.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 138,
+    "kind": "variable",
+    "name": "fs",
+    "memberof": "courses-md/lib/templates.js",
+    "static": true,
+    "longname": "courses-md/lib/templates.js~fs",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/templates.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 139,
+    "kind": "variable",
+    "name": "handlebars",
+    "memberof": "courses-md/lib/templates.js",
+    "static": true,
+    "longname": "courses-md/lib/templates.js~handlebars",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/templates.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 140,
+    "kind": "variable",
+    "name": "path",
+    "memberof": "courses-md/lib/templates.js",
+    "static": true,
+    "longname": "courses-md/lib/templates.js~path",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/templates.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 141,
+    "kind": "variable",
+    "name": "cache",
+    "memberof": "courses-md/lib/templates.js",
+    "static": true,
+    "longname": "courses-md/lib/templates.js~cache",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/templates.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "{}"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 142,
+    "kind": "variable",
+    "name": "templatesDir",
+    "memberof": "courses-md/lib/templates.js",
+    "static": true,
+    "longname": "courses-md/lib/templates.js~templatesDir",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/templates.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 143,
+    "kind": "function",
+    "name": "getTemplate",
+    "memberof": "courses-md/lib/templates.js",
+    "generator": false,
+    "async": true,
+    "static": true,
+    "longname": "courses-md/lib/templates.js~getTemplate",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/templates.js",
+    "importStyle": "{getTemplate}",
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "params": [
+      {
+        "name": "basename",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 144,
+    "kind": "file",
+    "name": "courses-md/lib/utils.js",
+    "content": "const _ = require('lodash');\nconst cp = require('child_process');\nconst shellEscape = require('shell-escape');\nconst tmp = require('tmp');\nconst webpack = require('webpack');\n\ntmp.setGracefulCleanup();\n\nexports.createTemporaryDirectory = function(options = {}) {\n  return new Promise((resolve, reject) => {\n    tmp.dir(options, (err, path, clean) => {\n      if (err) {\n        reject(err);\n      } else {\n        resolve(path);\n      }\n    });\n  })\n}\n\nexports.execute = function(args, options = {}) {\n  return new Promise((resolve, reject) => {\n    cp.exec(shellEscape(args), options, (err, result) => {\n      if (err) {\n        reject(err);\n      } else {\n        resolve(result);\n      }\n    });\n  });\n};\n\nexports.toArray = function(value) {\n  return _.isArray(value) ? value : _.compact([ value ]);\n};\n\nexports.runWebpack = function(config) {\n  return new Promise((resolve, reject) => {\n    webpack(config, (err, stats) => {\n      if (err) {\n        return reject(err);\n      }\n\n      const jsonStats = stats.toJson();\n      if (jsonStats.errors.length) {\n        return reject(new Error(`Errors occurred while running webpack:\\n\\n${jsonStats.errors.join('\\n\\n')}`));\n      }\n\n      resolve(jsonStats);\n    });\n  });\n};\n",
+    "static": true,
+    "longname": "/Users/unknow/Projects/mei/courses-md/lib/utils.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 145,
+    "kind": "variable",
+    "name": "_",
+    "memberof": "courses-md/lib/utils.js",
+    "static": true,
+    "longname": "courses-md/lib/utils.js~_",
+    "access": "private",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "ignore": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 146,
+    "kind": "variable",
+    "name": "cp",
+    "memberof": "courses-md/lib/utils.js",
+    "static": true,
+    "longname": "courses-md/lib/utils.js~cp",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 147,
+    "kind": "variable",
+    "name": "shellEscape",
+    "memberof": "courses-md/lib/utils.js",
+    "static": true,
+    "longname": "courses-md/lib/utils.js~shellEscape",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 148,
+    "kind": "variable",
+    "name": "tmp",
+    "memberof": "courses-md/lib/utils.js",
+    "static": true,
+    "longname": "courses-md/lib/utils.js~tmp",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 149,
+    "kind": "variable",
+    "name": "webpack",
+    "memberof": "courses-md/lib/utils.js",
+    "static": true,
+    "longname": "courses-md/lib/utils.js~webpack",
+    "access": "public",
+    "export": false,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 150,
+    "kind": "function",
+    "name": "createTemporaryDirectory",
+    "memberof": "courses-md/lib/utils.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/utils.js~createTemporaryDirectory",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": "{createTemporaryDirectory}",
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "params": [
+      {
+        "name": "options",
+        "optional": true,
+        "types": [
+          "{}"
+        ],
+        "defaultRaw": {},
+        "defaultValue": "{}"
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 151,
+    "kind": "function",
+    "name": "execute",
+    "memberof": "courses-md/lib/utils.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/utils.js~execute",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": "{execute}",
+    "description": null,
+    "lineNumber": 21,
+    "undocument": true,
+    "params": [
+      {
+        "name": "args",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "options",
+        "optional": true,
+        "types": [
+          "{}"
+        ],
+        "defaultRaw": {},
+        "defaultValue": "{}"
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 152,
+    "kind": "function",
+    "name": "toArray",
+    "memberof": "courses-md/lib/utils.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/utils.js~toArray",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": "{toArray}",
+    "description": null,
+    "lineNumber": 33,
+    "undocument": true,
+    "params": [
+      {
+        "name": "value",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 153,
+    "kind": "function",
+    "name": "runWebpack",
+    "memberof": "courses-md/lib/utils.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "courses-md/lib/utils.js~runWebpack",
+    "access": "public",
+    "export": true,
+    "importPath": "courses-md/courses-md/lib/utils.js",
+    "importStyle": "{runWebpack}",
+    "description": null,
+    "lineNumber": 37,
+    "undocument": true,
+    "params": [
+      {
+        "name": "config",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "kind": "index",
+    "content": "# Courses <img src=\"https://cdn.rawgit.com/dcurtis/markdown-mark/10a241f3/svg/markdown-mark.svg\" width=48.75 height=30 alt=\"MD\">\n\n> Write courses in Markdown and publish them as HTML slides.\n\n[![npm version](https://badge.fury.io/js/courses-md.svg)](https://badge.fury.io/js/courses-md)\n\n<!-- START doctoc generated TOC please keep comment here to allow auto update -->\n<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->\n\n\n- [Requirements](#requirements)\n- [Getting started](#getting-started)\n- [What sorcery is this?](#what-sorcery-is-this)\n- [Usage](#usage)\n  - [File structure](#file-structure)\n  - [Scripts](#scripts)\n\n<!-- END doctoc generated TOC please keep comment here to allow auto update -->\n\n\n\n## Requirements\n\n* [Node.js][node] 8+\n\n\n\n## Getting started\n\nInstall our [Yeoman generator][generator-courses-md] to get started:\n\n```bash\nnpm install -g yo generator-courses-md\n```\n\nCreate a directory in which to write your courses. Go into it and run the generator:\n\n```bash\nmkdir courses\ncd courses\nyo courses-md\n```\n\nRun `yo courses-md --help` or read the [project's documentation][generator-courses-md] to see what options are available.\n\n\n\n## What sorcery is this?\n\nCourses MD allows you to write Markdown which will be automatically transformed\ninto HTML slides.\n\nThe resulting HTML files are [Remark][remark] slides and Courses MD uses\n[md2remark][md2remark] to process the Markdown, so you should familiarize\nyourself with these 2 tools to know what you can do.\n\n\n\n[generator-courses-md]: https://github.com/MediaComem/generator-courses-md\n[generator-courses-md-docs]: https://github.com/MediaComem/generator-courses-md#readme\n[md2remark]: https://github.com/AlphaHydrae/md2remark\n[node]: https://nodejs.org\n[remark]: https://remarkjs.com/#1\n",
+    "longname": "/Users/unknow/Projects/mei/courses-md/README.md",
+    "name": "./README.md",
+    "static": true,
+    "access": "public"
+  }
+]

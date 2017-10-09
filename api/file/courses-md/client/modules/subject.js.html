@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../../">
+  <title data-ice="title">courses-md/client/modules/subject.js | Courses MD</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Write courses in Markdown and publish them as HTML slides"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="Courses MD"><meta property="twitter:description" content="Write courses in Markdown and publish them as HTML slides"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#client-modules">client/modules</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/courses-md/client/modules/subject.js~Subject.html">Subject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib">lib</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/courses-md/lib/config.js~Config.html">Config</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-program">program</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logCompiledFile">logCompiledFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logExistingFile">logExistingFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logNewFile">logNewFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logNewOrExistingFile">logNewOrExistingFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logProgress">logProgress</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-publish">publish</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-compileSlides">compileSlides</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getTemplate">getTemplate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createTemporaryDirectory">createTemporaryDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-execute">execute</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-runWebpack">runWebpack</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toArray">toArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-cli">cli</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib-build">lib/build</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-build">build</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-webpack">webpack</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib-commands">lib/commands</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildCommand">buildCommand</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-publishCommand">publishCommand</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-serve">serve</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-watch">watch</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">courses-md/client/modules/subject.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const $ = require(&apos;imports-loader?$=jQuery!jquery/dist/jquery&apos;);
+const remark = require(&apos;exports-loader?remark!remark-slide/out/remark&apos;);
+const URI = require(&apos;urijs/src/URI&apos;);
+
+import githugSvg from &apos;../assets/github.svg&apos;;
+import homeSvg from &apos;../assets/home.svg&apos;;
+import { extend } from &apos;./utils&apos;;
+
+/**
+ * A subject in a course that can be displayed as a Remark HTML slideshow.
+ *
+ * Various methods of this class can be used to customize the runtime behavior
+ * and look-and-feel of the slideshow before calling {@link Subject#start}.
+ *
+ * The `src/subject/index.js` file in your Courses MD repository should provide
+ * a Subject instance that you can customize.
+ */
+export default class Subject {
+
+  /**
+   * Constructs a new subject with the default configuration.
+   *
+   * The subject will have 1 or 2 default links:
+   *
+   * * If a `subjectUrl` is configured, a link to the subject&apos;s Markdown source
+   *   will be added.
+   * * A link to the home page will be added.
+   */
+  constructor() {
+
+    /**
+     * @private
+     */
+    this.config = JSON.parse($(&apos;meta[name=&quot;config&quot;]&apos;).attr(&apos;content&apos;));
+
+    /**
+     * @private
+     */
+    this.links = [];
+
+    /**
+     * @private
+     */
+    this.logoOptions = undefined;
+
+    if (this.config.subjectUrl) {
+      this.addLink({
+        url: this.config.subjectUrl,
+        imageUrl: githugSvg,
+        class: &apos;source-link&apos;,
+        width: 24,
+        height: 24,
+        alt: &apos;Source code&apos;,
+        title: &apos;Source code&apos;
+      });
+    }
+
+    this.addLink({
+      url: this.homeUrl,
+      imageUrl: homeSvg,
+      class: &apos;home-link&apos;,
+      width: 24,
+      height: 24,
+      alt: &apos;Home&apos;,
+      title: &apos;Home&apos;
+    });
+  }
+
+  /**
+   * Adds a link to the slideshow (displayed in the top right corner with the
+   * default style).
+   *
+   * Links are inserted into an element with the `slide-links` class which you
+   * can customize through CSS.
+   *
+   * @param {Object} options - Link options.
+   * @param {string} options.url - The URL to link to.
+   * @param {string} options.imageUrl - The URL of the image to use to display
+   * the link.
+   * @param {number} [options.width] - The width of the link&apos;s image.
+   * @param {number} [options.height] - The height of the link&apos;s image.
+   * @param {string} [options.class] - Class to add to the link element.
+   * @param {string} [options.alt] - Alternate text of the link&apos;s image.
+   * @param {string} [options.title] - Title of the link&apos;s image.
+   */
+  addLink(options) {
+    this.links.push(options);
+  }
+
+  /**
+   * Removes all configured links.
+   */
+  clearLinks() {
+    this.links.length = 0;
+  }
+
+  /**
+   * Displays a logo with the specified options (in the top-left corner with the default style).
+   *
+   * The logo will be an element with the `slide-logo` class which you can
+   * customize through CSS.
+   *
+   * @param {Object} options - Logo options.
+   * @param {string} options.url - The URL to go to when the logo is
+   * clicked.
+   * @param {string} options.imageUrl - The URL of the logo&apos;s image.
+   * @param {number} [options.width] - The width of the logo&apos;s image.
+   * @param {number} [options.height] - The height of the logo&apos;s image.
+   */
+  setLogo(options) {
+    this.logoOptions = options;
+  }
+
+  /**
+   * The URL to which the default home link points to (customizable at runtime
+   * through the `home` URL query param).
+   *
+   * By default, this is the same value as the `basePath` configuration property
+   * provided by the build process. However, it can be customized by providing
+   * the `home` URL query param:
+   *
+   * * If the `home` query param is a GitHub identifier in the `User/Repo`
+   * format, the home URL will point to that repository on `https://github.com`.
+   * * If the `home` query param is an URL, it will be used as the home URL.
+   *
+   * @type {string}
+   */
+  get homeUrl() {
+
+    const currentUri = URI(window.location.href);
+    const home = currentUri.search(true).home;
+
+    if (typeof(home) == &apos;string&apos; &amp;&amp; home.match(/^[a-z0-9\-\_\.]+\/[a-z0-9\-\_\.]+(?:#.*)?$/i)) {
+      return `https://github.com/${home}`;
+    } else if (typeof(home) == &apos;string&apos;) {
+      return home;
+    } else {
+      return this.config.basePath;
+    }
+  }
+
+  /**
+   * A jQuery object that contains an element for each Remark slide in the slideshow.
+   *
+   * @type {jQuery}
+   */
+  get slides() {
+    if (!this._slides) {
+      const slides = $(&apos;.remark-slide-content&apos;);
+      if (slides.length) {
+        this._slides = slides;
+      }
+    }
+
+    return this._slides;
+  }
+
+  /**
+   * Starts the Remark slideshow.
+   *
+   * @param {Object} options - Slideshow options.
+   * @param {Object} [options.remark] - Configuration options to pass to
+   * Remark (see https://github.com/gnab/remark/wiki/Configuration); note that
+   * these will be applied to **all** slideshows
+   */
+  start(options) {
+    options = options || {};
+
+    const remarkOptions = extend({}, this.config.remark, options.remark);
+
+    /**
+     * The Remark slideshow (only available after calling `start`).
+     *
+     * @type {Remark}
+     */
+    this.slideshow = remark.create();
+
+    this.insertLinks();
+    this.insertLogo();
+
+    // Make all external links open a new window
+    $(&apos;a[href]&apos;).not(&apos;.home-link&apos;).not(&apos;[href^=&quot;#&quot;]&apos;).attr(&apos;target&apos;, &apos;_blank&apos;);
+  }
+
+  /**
+   * Inserts the configured links into the slideshow.
+   *
+   * @private
+   */
+  insertLinks() {
+    if (!this.links.length) {
+      return;
+    }
+
+    const $links = $(&apos;&lt;div class=&quot;slide-links&quot; /&gt;&apos;);
+
+    this.links.reverse().forEach(link =&gt; {
+
+      const $link = $(&apos;&lt;a /&gt;&apos;).attr(&apos;href&apos;, link.url).prependTo($links);
+
+      if (link.class) {
+        $link.addClass(link.class);
+      }
+
+      const $linkImg = $(&apos;&lt;img /&gt;&apos;).attr(&apos;src&apos;, link.imageUrl).appendTo($link);
+
+      if (link.alt) {
+        $linkImg.attr(&apos;alt&apos;, link.alt);
+      }
+
+      if (link.title) {
+        $linkImg.attr(&apos;title&apos;, link.title);
+      }
+
+      if (link.width) {
+        $linkImg.attr(&apos;width&apos;, link.width);
+      }
+
+      if (link.height) {
+        $linkImg.attr(&apos;height&apos;, link.height);
+      }
+    });
+
+    $links.prependTo(this.slides);
+  }
+
+  /**
+   * Inserts the configured logo into the slideshow.
+   *
+   * @private
+   */
+  insertLogo() {
+    if (!this.logoOptions) {
+      return;
+    }
+
+    const $logo = $(&apos;&lt;div class=&quot;slide-logo&quot; /&gt;&apos;);
+    const $logoLink = $(&apos;&lt;a /&gt;&apos;).appendTo($logo).attr(&apos;href&apos;, this.logoOptions.url);
+    const $logoImg = $(&apos;&lt;img /&gt;&apos;).appendTo($logoLink).attr(&apos;src&apos;, this.config.basePath + &apos;/&apos; + this.logoOptions.imageUrl);
+
+    if (this.logoOptions.width) {
+      $logoImg.attr(&apos;width&apos;, this.logoOptions.width);
+    }
+
+    if (this.logoOptions.height) {
+      $logoImg.attr(&apos;height&apos;, this.logoOptions.height);
+    }
+
+    $logo.prependTo(this.slides);
+  }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.3)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">courses-md/lib/config.js | Courses MD</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="Write courses in Markdown and publish them as HTML slides"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="Courses MD"><meta property="twitter:description" content="Write courses in Markdown and publish them as HTML slides"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#client-modules">client/modules</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/courses-md/client/modules/subject.js~Subject.html">Subject</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-extend">extend</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib">lib</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/courses-md/lib/config.js~Config.html">Config</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-program">program</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logCompiledFile">logCompiledFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logExistingFile">logExistingFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logNewFile">logNewFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logNewOrExistingFile">logNewOrExistingFile</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-logProgress">logProgress</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-publish">publish</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-compileSlides">compileSlides</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getTemplate">getTemplate</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createTemporaryDirectory">createTemporaryDirectory</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-execute">execute</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-runWebpack">runWebpack</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-toArray">toArray</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-cli">cli</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib-build">lib/build</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-build">build</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-webpack">webpack</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#lib-commands">lib/commands</a><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-buildCommand">buildCommand</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-publishCommand">publishCommand</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-serve">serve</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-watch">watch</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">courses-md/lib/config.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const _ = require(&apos;lodash&apos;);
+const fs = require(&apos;fs-extra&apos;);
+const path = require(&apos;path&apos;);
+
+const { execute } = require(&apos;./utils&apos;);
+
+const OPTIONS = [
+  &apos;config&apos;,
+  &apos;title&apos;,
+  &apos;scmVersion&apos;,
+  &apos;repoUrl&apos;,
+  &apos;baseUrl&apos;,
+  &apos;root&apos;,
+  &apos;subjects&apos;,
+  &apos;ignore&apos;,
+  &apos;build&apos;,
+  &apos;homeEntryPoint&apos;,
+  &apos;subjectEntryPoint&apos;,
+  &apos;remark&apos;,
+  &apos;publish.url&apos;,
+  &apos;publish.branch&apos;,
+  &apos;publish.version&apos;
+];
+
+/**
+ * Configuration object for Courses MD.
+ *
+ * Configuration options can be provided:
+ *
+ * * At the command line (e.g. `courses-md --config my-config.js build`)
+ * * As environment variables (e.g. `COURSES_MD_CONFIG=my-config.js courses-md build`)
+ * * As properties exported from a JavaScript configuration file (`./config.js` by default)
+ *
+ * Options from the command line take precedence over environment variables, which themselves take precedence over configuration file properties.
+ * Not all options can be provided with all 3 techniques, depending on the type.
+ *
+ * The following options are available:
+ *
+ * CLI                           | Environment                   | Config file       | Purpose
+ * :---                          | :---                          | :---              | :---
+ * `-c, --config &lt;file&gt;`         | `$COURSES_MD_CONFIG`          |                   | Path to the configuration file (defaults to `./config.js`)
+ * `-b, --build &lt;dir&gt;`           | `$COURSES_MD_BUILD`           | `build`           | Path to the build directory where HTML slideshows are saved (defaults to `./build`)
+ * `-t, --title &lt;title&gt;`         | `$COURSES_MD_TITLE`           | `title`           | Home page title (defaults to &quot;Courses MD&quot;)
+ *                               |                               | `remark`          | Configuration options to pass to Remark (see https://github.com/gnab/remark/wiki/Configuration); note that these will be applied to **all** slideshows
+ * `--base-url &lt;url&gt;`            | `$COURSES_MD_BASE_URL`        | `baseUrl`         | Base URL at which the published slides will be available
+ * `--repo-url &lt;url&gt;`            | `$COURSES_MD_REPO_URL`        | `repoUrl`         | Web URL of the repository where the Markdown source is committed (this should be the URL to the repository on GitHub, for example, not the Git URL)
+ * `--publish-url &lt;url&gt;`         | `$COURSES_MD_PUBLISH_URL`     | `publish.url`     | Git URL of the repository to publish the HTML slides to
+ * `--publish-branch &lt;branch&gt;`   | `$COURSES_MD_PUBLISH_BRANCH`  | `publish.branch`  | Branch to publish the HTML slides in (e.g. &quot;gh-pages&quot;)
+ * `--publish-version &lt;version&gt;` | `$COURSES_MD_PUBLISH_VERSION` | `publish.version` | Version sub-directory to publish the slides in
+ */
+class Config {
+  constructor() {
+    this.setDefaultOptions();
+  }
+
+  get absoluteBuildDir() {
+    return path.resolve(this.absoluteRootDir, this.build);
+  }
+
+  get absoluteHomeEntryPointFile() {
+    return path.resolve(this.absoluteRootDir, this.homeEntryPoint);
+  }
+
+  get absoluteSubjectEntryPointFile() {
+    return path.resolve(this.absoluteRootDir, this.subjectEntryPoint);
+  }
+
+  get absoluteRootDir() {
+    return path.resolve(this.root);
+  }
+
+  get absoluteSubjectsDir() {
+    return path.resolve(this.absoluteRootDir, this.subjects);
+  }
+
+  getEnvVar(name) {
+    return process.env[`COURSES_MD_${name}`];
+  }
+
+  async getSourceUrl() {
+    if (!this.repoUrl) {
+      return;
+    }
+
+    const scmVersion = await this.loadScmVersion();
+    return scmVersion ? `${this.repoUrl}/tree/${scmVersion}` : undefined;
+  }
+
+  async load(options) {
+    options = options || {};
+
+    this.setDefaultOptions();
+
+    const rootDir = path.resolve(options.root || process.env.ROOT || this.root);
+    const configFile = path.resolve(rootDir, options.config || process.env.CONFIG || this.config);
+    const configFileRequired = options.config || process.env.CONFIG || false;
+
+    await this.loadFileOptions(configFile, configFileRequired);
+
+    this.setEnvironmentOptions();
+    this.set(options);
+
+    return this;
+  }
+
+  async loadFileOptions(file, required = true) {
+
+    const exists = await fs.pathExists(file);
+    if (!exists) {
+      if (required) {
+        throw new Error(`Configuration path &quot;${file}&quot; does not exist`);
+      } else {
+        return this;
+      }
+    }
+
+    const options = await Promise.resolve(require(file));
+    this.set(options);
+
+    if (options.publish &amp;&amp; options.publish.afterBuild) {
+      this.publish.afterBuild = options.publish.afterBuild;
+    }
+
+    return this;
+  }
+
+  async loadScmVersion() {
+    if (typeof(this.scmVersion) == &apos;function&apos;) {
+      return Promise.resolve(this.scmVersion(this));
+    } else {
+      return this.scmVersion;
+    }
+  }
+
+  async loadDefaultScmVersion() {
+    return execute([ &apos;git&apos;, &apos;rev-parse&apos;, &apos;--verify&apos;, &apos;HEAD&apos; ], { cwd: this.absoluteRootDir }).then(result =&gt; result.toString().trim()).catch(() =&gt; undefined);
+  }
+
+  setEnvironmentOptions() {
+    return this.set({
+      title: this.getEnvVar(&apos;TITLE&apos;),
+      scmVersion: this.getEnvVar(&apos;SCM_VERSION&apos;),
+      repoUrl: this.getEnvVar(&apos;REPO&apos;),
+      baseUrl: this.getEnvVar(&apos;BASE_URL&apos;),
+      root: this.getEnvVar(&apos;ROOT&apos;),
+      subjects: this.getEnvVar(&apos;SUBJECTS&apos;),
+      build: this.getEnvVar(&apos;BUILD&apos;),
+      homeEntryPoint: this.getEnvVar(&apos;HOME_ENTRY_POINT&apos;),
+      subjectEntryPoint: this.getEnvVar(&apos;SUBJECT_ENTRY_POINT&apos;),
+      publish: {
+        url: this.getEnvVar(&apos;PUBLISH_URL&apos;),
+        branch: this.getEnvVar(&apos;PUBLISH_BRANCH&apos;),
+        version: this.getEnvVar(&apos;PUBLISH_VERSION&apos;)
+      }
+    });
+  }
+
+  setDefaultOptions() {
+
+    this.remark = {};
+    this.publish = {};
+
+    return this.set({
+      config: &apos;config.js&apos;,
+
+      title: &apos;Courses MD&apos;,
+      scmVersion: () =&gt; this.loadDefaultScmVersion(),
+
+      repoUrl: undefined,
+      baseUrl: undefined,
+
+      root: &apos;.&apos;,
+
+      subjects: &apos;subjects&apos;,
+      ignore: [ &apos;**/node_modules/**&apos; ],
+
+      build: &apos;build&apos;,
+      homeEntryPoint: &apos;src/home/index.js&apos;,
+      subjectEntryPoint: &apos;src/subject/index.js&apos;,
+
+      publish: {
+        branch: &apos;master&apos;,
+        version: new Date().getFullYear().toString()
+      }
+    });
+  }
+
+  set(options) {
+
+    OPTIONS.forEach(property =&gt; {
+      const value = _.get(options, property);
+      if (value !== undefined) {
+        _.set(this, property, value);
+      }
+    });
+
+    return this;
+  }
+
+  validate() {
+
+    this.validateString(&apos;title&apos;);
+    this.validateString(&apos;repoUrl&apos;);
+    this.validateString(&apos;baseUrl&apos;);
+    this.validateString(&apos;root&apos;);
+    this.validateString(&apos;subjects&apos;);
+    this.validateString(&apos;build&apos;);
+    this.validateString(&apos;homeEntryPoint&apos;);
+    this.validateString(&apos;subjectEntryPoint&apos;);
+
+    if (!_.isArray(this.ignore)) {
+      throw new Error(`&quot;ignore&quot; property must be an array, got ${typeof(this.ignore)}: ${this.ignore}`);
+    }
+
+    if (!_.isObject(this.remark)) {
+      throw new Error(`&quot;remark&quot; property must be an object, got ${typeof(this.remark)}: ${this.remark}`);
+    }
+
+    if (!_.includes([ &apos;string&apos;, &apos;function&apos; ], typeof(this.scmVersion))) {
+      throw new Error(`&quot;scmVersion&quot; property must be a string or a function, got ${typeof(this.scmVersion)}: ${this.remark}`);
+    }
+
+    if (this.publish.url !== undefined) {
+      this.validateString(&apos;publish.url&apos;);
+    }
+
+    if (this.publish.version !== undefined) {
+      this.validateString(&apos;publish.version&apos;);
+    }
+
+    return this;
+  }
+
+  validateString(property) {
+    const value = _.get(this, property);
+    if (typeof(value) != &apos;string&apos;) {
+      throw new Error(`&quot;${property}&quot; property must be a string, got ${typeof(value)}: ${value}`);
+    }
+  }
+}
+
+module.exports = Config;
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.3)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
