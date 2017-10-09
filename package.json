@@ -18,7 +18,7 @@
     "docs:md": "npm run client:build && npm run docs:md:clean && npm run docs:md:build && npm run docs:md:watch",
     "docs:md:build": "node ./bin/courses-md build",
     "docs:md:clean": "rimraf docs/md",
-    "docs:md:watch": "onchange \"src/**/*.*\" \"subjects/**/*.*\" -- npm run docs:md:build",
+    "docs:md:watch": "node ./bin/courses-md watch",
     "doctoc": "doctoc --notitle --github README.md",
     "prepublishOnly": "npm run client:build",
     "start": "concurrently \"npm run docs\" \"npm run client\""
