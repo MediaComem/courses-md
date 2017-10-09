@@ -60,6 +60,4 @@ yourself with these 2 tools to know what you can do.
 [generator-courses-md-docs]: https://github.com/MediaComem/generator-courses-md#readme
 [md2remark]: https://github.com/AlphaHydrae/md2remark
 [node]: https://nodejs.org
-[npm-scripts]: https://docs.npmjs.com/misc/scripts
 [remark]: https://remarkjs.com/#1
-[webpack]: https://webpack.js.org
