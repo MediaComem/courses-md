@@ -5,7 +5,7 @@ import './index.css';
 import markdownLogo from '../../markdown.svg';
 
 subject.setLogo({
-  linkUrl: 'https://github.com/MediaComem/courses-md',
+  url: 'https://github.com/MediaComem/courses-md',
   imageUrl: markdownLogo,
   width: 48.75,
   height: 30
