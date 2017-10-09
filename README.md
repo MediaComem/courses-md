@@ -11,9 +11,8 @@
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
 - [What sorcery is this?](#what-sorcery-is-this)
-- [Usage](#usage)
-  - [File structure](#file-structure)
-  - [Scripts](#scripts)
+- [Documentation](#documentation)
+- [Examples](#examples)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -56,6 +55,27 @@ yourself with these 2 tools to know what you can do.
 
 
 
+## Documentation
+
+The documentation is written with Courses MD itself:
+
+* Read it [as Markdown on GitHub](https://github.com/MediaComem/courses-md/tree/master/subjects/documentation#readme)
+* Read it [as HTML slides on GitHub Pages](https://mediacomem.github.io/courses-md/latest/subjects/documentation/)
+
+
+
+## Examples
+
+Take a look at these [COMEM+ web development courses][comem-webdev] which were written with Courses MD, for example:
+
+* [Git Branching][comem-webdev-git-branching]
+* [REST APIs Introduction][comem-webdev-rest]
+
+
+
+[comem-webdev]: https://github.com/MediaComem/comem-webdev
+[comem-webdev-git-branching]: https://mediacomem.github.io/comem-webdev-docs/2017/subjects/git-branching/
+[comem-webdev-rest]: https://mediacomem.github.io/comem-webdev-docs/2017/subjects/rest/
 [generator-courses-md]: https://github.com/MediaComem/generator-courses-md
 [generator-courses-md-docs]: https://github.com/MediaComem/generator-courses-md#readme
 [md2remark]: https://github.com/AlphaHydrae/md2remark
