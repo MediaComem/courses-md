@@ -20,13 +20,14 @@
 
 ## Requirements
 
+* [Git][git] 2+
 * [Node.js][node] 8+
 
 
 
 ## Getting started
 
-Install our [Yeoman generator][generator-courses-md] to get started:
+Install the [Yeoman generator][generator-courses-md] to get started:
 
 ```bash
 npm install -g yo generator-courses-md
@@ -78,6 +79,7 @@ Take a look at these [COMEM+ web development courses][comem-webdev] which were w
 [comem-webdev-rest]: https://mediacomem.github.io/comem-webdev-docs/2017/subjects/rest/
 [generator-courses-md]: https://github.com/MediaComem/generator-courses-md
 [generator-courses-md-docs]: https://github.com/MediaComem/generator-courses-md#readme
+[git]: https://git-scm.com
 [md2remark]: https://github.com/AlphaHydrae/md2remark
 [node]: https://nodejs.org
 [remark]: https://remarkjs.com/#1
