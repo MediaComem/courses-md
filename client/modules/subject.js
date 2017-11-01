@@ -64,6 +64,8 @@ export default class Subject {
       alt: 'Home',
       title: 'Home'
     });
+
+    this.jQuery = $;
   }
 
   /**
