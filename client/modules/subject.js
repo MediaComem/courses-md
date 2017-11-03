@@ -238,7 +238,7 @@ export default class Subject {
 
     const $logo = $('<div class="slide-logo" />');
     const $logoLink = $('<a />').appendTo($logo).attr('href', this.logoOptions.url);
-    const $logoImg = $('<img />').appendTo($logoLink).attr('src', this.config.basePath + '/' + this.logoOptions.imageUrl);
+    const $logoImg = $('<img />').appendTo($logoLink).attr('src', this.logoOptions.imageUrl);
 
     if (this.logoOptions.width) {
       $logoImg.attr('width', this.logoOptions.width);
